@@ -86,22 +86,26 @@ void Game::Input()
 			ismoving = false;
 			if (event.key.keysym.sym == SDLK_RIGHT) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset, 0);
+				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, movement_offset, 0);
 				direction = RIGHT;
 				ismoving = true;
 			}
 			else if (event.key.keysym.sym == SDLK_LEFT) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, -movement_offset, 0);
+				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, -movement_offset, 0);
 				direction = LEFT;
 				ismoving = true;
 			}
 
 			if (event.key.keysym.sym == SDLK_UP) {
+				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, 0, -movement_offset);
 				ScrollWithBoundsCheck(&map, &ViewWindow, 0, -movement_offset);
 				direction = RIGHT;
 				ismoving = true;
 			}
 			else if (event.key.keysym.sym == SDLK_DOWN) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, 0, movement_offset);
+				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, 0, movement_offset);
 				direction = LEFT;
 				ismoving = true;
 			}

@@ -28,21 +28,21 @@
 #define TILEY_MASK 0x00FF
 
 //shift 6 bits for 64 x 64 tilemaps
-#define MUL_TILE_WIDTH(i) ((i)<<6) //4
-#define MUL_TILE_HEIGHT(i)((i)<<6) //4
-#define DIV_TILE_WIDTH(i) ((i)>>6) //4
-#define DIV_TILE_HEIGHT(i)((i)>>6) //4
-#define MOD_TILE_WIDTH(i) ((i)&63) //63
-#define MOD_TILE_HEIGHT(i)((i)&63) //63
+#define MUL_TILE_WIDTH(i) ((i)<<6)
+#define MUL_TILE_HEIGHT(i)((i)<<6)
+#define DIV_TILE_WIDTH(i) ((i)>>6)
+#define DIV_TILE_HEIGHT(i)((i)>>6)
+#define MOD_TILE_WIDTH(i) ((i)&63)
+#define MOD_TILE_HEIGHT(i)((i)&63)
 
 
 //shift 8 bits for 256 x 256 tilemaps
-#define MUL_TILE_WIDTH256(i) ((i)<<8) //4
-#define MUL_TILE_HEIGHT256(i)((i)<<8) //4
-#define DIV_TILE_WIDTH256(i) ((i)>>8) //4
-#define DIV_TILE_HEIGHT256(i)((i)>>8) //4
-#define MOD_TILE_WIDTH256(i) ((i)&255) //15
-#define MOD_TILE_HEIGHT256(i)((i)&255) //15
+#define MUL_TILE_WIDTH256(i) ((i)<<8)
+#define MUL_TILE_HEIGHT256(i)((i)<<8)
+#define DIV_TILE_WIDTH256(i) ((i)>>8)
+#define DIV_TILE_HEIGHT256(i)((i)>>8)
+#define MOD_TILE_WIDTH256(i) ((i)&255)
+#define MOD_TILE_HEIGHT256(i)((i)&255)
 
 class Tilemap
 {
