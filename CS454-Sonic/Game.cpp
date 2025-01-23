@@ -11,8 +11,8 @@ Game::Game(std::string name, int height, int width)
 	direction = RIGHT;
 
 	//viewwindow on tilemap
-	ViewWindow.x = 48;
-	ViewWindow.y = 0;
+	ViewWindow.x = 0;
+	ViewWindow.y = 150;
 	ViewWindow.w = width;
 	ViewWindow.h = height;
 	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
@@ -86,31 +86,27 @@ void Game::Input()
 			ismoving = false;
 			if (event.key.keysym.sym == SDLK_RIGHT) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset, 0);
-				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, movement_offset, 0);
 				direction = RIGHT;
 				ismoving = true;
 			}
 			else if (event.key.keysym.sym == SDLK_LEFT) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, -movement_offset, 0);
-				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, -movement_offset, 0);
 				direction = LEFT;
 				ismoving = true;
 			}
 
 			if (event.key.keysym.sym == SDLK_UP) {
-				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, 0, -movement_offset);
 				ScrollWithBoundsCheck(&map, &ViewWindow, 0, -movement_offset);
 				direction = RIGHT;
 				ismoving = true;
 			}
 			else if (event.key.keysym.sym == SDLK_DOWN) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, 0, movement_offset);
-				//ScrollWithBoundsCheck(&Foregroundmap, &ViewWindow, 0, movement_offset);
 				direction = LEFT;
 				ismoving = true;
 			}
 
-			if (event.key.keysym.sym == SDLK_ESCAPE) {//pause
+			if (event.key.keysym.sym == SDLK_ESCAPE) {
 				this->stoprunning();
 			}
 		}
