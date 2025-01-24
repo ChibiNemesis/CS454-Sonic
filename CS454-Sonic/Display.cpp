@@ -11,9 +11,17 @@ Dim TileX4_V2(Index index) {
 	return (((index % FOREGROUND_TILEMAP_WIDTH) - 1) * TILE_WIDTH) + x_modifier; 
 }
 Dim TileY4_V2(Index index) { 
-
+	int special_case[16] = { 753,754,755,756,773,774,775,776,793,794,795,796,813,814,815,816 };
 	//The tilemap has gaps, so we have to move the pivot down
-	int y_modifier = ((((index % FOREGROUND_TILEMAP_HEIGHT) - 1) / 80) + 2) * 8;
+	//int y_modifier = ((((index % FOREGROUND_TILEMAP_HEIGHT) - 1) / 80) + 2) * 8;
+
+	// first find the row of the tile, then add 8 pixels every 4 rows
+	int y_modifier = (((index - 1) / 80) * 8) + 8;
+	for (auto a = 0; a < 16; a++) {
+		if (special_case[a] == index) {
+			y_modifier = 16;
+		}
+	}
 
 	return ((((index-1) / (FOREGROUND_TILEMAP_WIDTH))) * TILE_HEIGHT) + y_modifier; 
 }
