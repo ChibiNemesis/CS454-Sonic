@@ -4,7 +4,7 @@ void TickAnimator::Progress(timestamp_t currTime) {
 	if (!anim->IsDiscrete()) { // no discrete fires in every loop!
 		elapsedTime = currTime - lastTime;
 		lastTime = currTime;
-		NotifyAction(*anim);
+		NotifyAction(*anim); //maybe this should be ovewritten??
 	}
 	else
 		while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
@@ -16,5 +16,6 @@ void TickAnimator::Progress(timestamp_t currTime) {
 				return;
 			}
 		}
-	std::cout << "Elapsed Time: " << elapsedTime << std::endl;
+	//std::cout << "Elapsed Time: " << elapsedTime << std::endl;
+	//std::cout << "Current Reps: " << currRep << std::endl;
 }

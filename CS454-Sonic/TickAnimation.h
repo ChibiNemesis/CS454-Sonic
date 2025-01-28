@@ -24,7 +24,6 @@ public:
 	}
 	TickAnimation(const std::string& _id, unsigned d, unsigned r, bool discrete) :
 		Animation(id), delay(d), reps(r), isDiscrete(discrete) {
-		std::cout << isDiscrete << " " << reps << std::endl;
 		assert(Inv());
 	}
 };

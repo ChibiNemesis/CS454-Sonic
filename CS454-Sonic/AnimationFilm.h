@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 
 class AnimationFilm {
 	std::vector<SDL_Rect> boxes;
@@ -14,29 +15,23 @@ class AnimationFilm {
 	std::string id;
 
 	void readRects(std::string path) {
-		int width, height;
-		int point[5];
+		int point[4] = { 0 };
 		std::string w, h;
 		std::ifstream input{ path };
-		std::getline(input, w);
-		std::getline(input, h);
-
-		width = std::stoi(w);
-		height = std::stoi(h);
 
 		for (std::string line; std::getline(input, line);) {
 			std::istringstream ss(std::move(line));
 			int a = 0;
-			for (std::string value; std::getline(ss, value, ',');) {
+			for (std::string value; std::getline(ss, value, ' ');) {
 				point[a] = std::stoi(value);
 				a++;
 			}
 			SDL_Rect r;
 			r.x = point[0];
 			r.y = point[1];
-			r.w = width;
-			r.h = height;
-			boxes.push_back(r);
+			r.w = point[2];
+			r.h = point[3];
+			Append(r);
 		}
 	}
 
@@ -56,11 +51,11 @@ public:
 	auto GetId(void) const -> const std::string& { return id; }
 	const SDL_Rect& GetFrameBox(byte frameNo) const
 	{
-		assert(boxes.size() > frameNo); return boxes[frameNo];
+		assert(boxes.size() > frameNo); 
+		return boxes[(int)frameNo];
 	}
 	void DisplayFrame(SDL_Surface* dest, const Point& at, byte frameNo) const
 	{
-		//MaskedBlit(bitmap, GetFrameBox(frameNo), dest, at);
 		SDL_Rect dst;
 		dst.x = at.x;
 		dst.y = at.y;
@@ -75,6 +70,7 @@ public:
 	AnimationFilm(SDL_Surface* _s, const std::string rectspath, const std::string& _id) {
 		bitmap = _s;
 		readRects(rectspath);
-		id = _id;
+		std::string copy = _id;
+		id = copy;
 	}
 };

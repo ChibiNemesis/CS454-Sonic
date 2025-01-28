@@ -10,6 +10,7 @@ void Sprite::Display(SDL_Surface& dest, const SDL_Rect& dpyArea, const Clipper& 
 	SDL_Rect dpyPos;
 	dpyPos.w = NULL;
 	dpyPos.h = NULL;
+	/*
 	if (clipper.Clip(GetBox(), dpyArea, &dpyPos, &clippedBox)) {
 		SDL_Rect clippedFrame{
 		frameBox.x + clippedBox.x,
@@ -19,14 +20,23 @@ void Sprite::Display(SDL_Surface& dest, const SDL_Rect& dpyArea, const Clipper& 
 		};
 
 		SDL_BlitSurface(currFilm->GetBitmap(), &clippedFrame, &dest, &dpyPos);
-		/*
+		
 		MaskedBlit(
 			currFilm->GetBitmap(),
 			clippedFrame,
 			dest,
 			dpyPos
-		);*/
-	}
+		);
+	}*/
+	//SDL_BlitSurface(currFilm->GetBitmap(), &clippedFrame, &dest, &dpyPos);
+}
+
+void Sprite::Display(SDL_Surface& dest, const SDL_Rect& dpyArea) const
+{
+	assert(currFilm->GetBitmap() != NULL);
+	SDL_Rect Dest_Rect = dpyArea; //this can have NULL width and height
+
+	SDL_BlitSurface(currFilm->GetBitmap(), &currFilm->GetFrameBox(frameNo), &dest, &Dest_Rect);
 }
 
 //create gridlayer

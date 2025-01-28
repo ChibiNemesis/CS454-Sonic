@@ -12,7 +12,7 @@ Game::Game(std::string name, int height, int width)
 
 	//viewwindow on tilemap
 	ViewWindow.x = 0;
-	ViewWindow.y = 150;
+	ViewWindow.y = 0; //150
 	ViewWindow.w = width;
 	ViewWindow.h = height;
 	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
@@ -38,12 +38,26 @@ Game::Game(std::string name, int height, int width)
 
 
 	//use this type of animation to update the elapsed time
-	tickanimation = new TickAnimation("5",50,1,false);
+	tickanimation = new TickAnimation("Anim-0",50,1,false);
 	tickanimator = new TickAnimator();
 	tickanimator->Start(*tickanimation, GetSystemTime());
 	
 	//Use the correct constructor here
 	character = new Character();
+
+
+	//Rings Setup
+	//Rings Bitmap format:
+	// Number of frames
+	// lines with those frames with format: x, y, width, height
+	std::string Ring_Surface_path = "tilesets\\misc_fixed.png";
+	std::string Ring_Rects_Path = "Animation\\Coins\\coinBitmapPos.txt";
+	std::string Ring_Pos_Path = "Animation\\Coins\\Coin0.txt";
+	SDL_Surface *Ring_Surface = IMG_Load(Ring_Surface_path.c_str());
+	AnimationFilm *coin_Film = new AnimationFilm(Ring_Surface, Ring_Rects_Path, "Coin-Film-0");
+	//Coins[0].SetAnimationFilm(coin_Film);
+	Coins[0] = new Coin(256, 320, coin_Film, "Coin-0");
+
 }
 
 Game::~Game()
@@ -136,14 +150,18 @@ void Game::mainloop()
 	Input();
 	Render();
 	Physics();
-	//Animate();
+	Animate();
 
+
+	//
 	//if (1000 / fps > SDL_GetTicks() - start)
 	//	SDL_Delay(1000/fps-(SDL_GetTicks() - start));
 }
 
 void Game::Physics()
 {
+	//Here check if player box has collided with any coin
+	//in that case, set the rendering parameter on that coin to false and play a sound
 
 }
 
@@ -166,6 +184,11 @@ void Game::Render()
 	//SDL_GetWindowSize(win, &w, &h);
 	SDL_Rect displayArea = { 0, 0, NULL, NULL };
 	display.TileTerrainDisplay(&map, &Foregroundmap ,*winsurface, ViewWindow, displayArea);
+
+	//Test coins rendering
+	//SDL_Rect Coin_Rect{256, 320, 0, 0};
+	SDL_Rect Coin_Rect{ 100 - ViewWindow.x, 295 - ViewWindow.y, 16, 16 }; //4*moving_offset + 256
+	Coins[0]->Display(*winsurface, Coin_Rect);//moving +x ->coin goes -x... moving -x -> coin goes +x
 
 	assert(!SDL_UpdateWindowSurface(win));
 }

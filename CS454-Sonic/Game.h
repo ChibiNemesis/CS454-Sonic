@@ -47,7 +47,7 @@ private:
 
 	//Character and Coin are subclasses of sprite
 	Character* character = NULL;
-	Coin Coins[20];
+	Coin *Coins[20];
 
 	//Not sure if we need 1 or more films
 	AnimationFilm* LeftMovementFilm = NULL;

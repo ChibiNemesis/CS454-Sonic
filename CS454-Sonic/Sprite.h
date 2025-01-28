@@ -75,13 +75,18 @@ public:
 	bool IsVisible(void) const { return isVisible; }
 	bool CollisionCheck(const Sprite* s) const;
 	void Display(SDL_Surface& dest, const SDL_Rect& dpyArea, const Clipper& clipper) const;
+	void Display(SDL_Surface& dest, const SDL_Rect& dpyArea) const;
 	Sprite(int _x, int _y, AnimationFilm* film, const std::string& _typeId = "") :
 		x(_x), y(_y), currFilm(film), typeId(_typeId)
 	{
-		frameNo = currFilm->GetTotalFrames(); SetFrame(0);
+		frameNo = currFilm->GetTotalFrames(); 
+		SetFrame(0);
+
 	}
 
-	Sprite(){}
+	Sprite(){
+		directMotion = false;
+	}
 
 	GravityHandler& GetGravityHandler(void)
 	{

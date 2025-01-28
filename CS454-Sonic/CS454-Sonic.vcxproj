@@ -152,6 +152,8 @@
     <ClInclude Include="Character.h" />
     <ClInclude Include="Clipper.h" />
     <ClInclude Include="Coin.h" />
+    <ClInclude Include="CoinAnimation.h" />
+    <ClInclude Include="CoinAnimator.h" />
     <ClInclude Include="CollisionChecker.h" />
     <ClInclude Include="Display.h" />
     <ClInclude Include="Game.h" />
@@ -170,6 +172,7 @@
     <ClInclude Include="Tilemap.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationFilmHolder.cpp" />
     <ClCompile Include="Animator.cpp" />
     <ClCompile Include="AnimatorManager.cpp" />
@@ -178,6 +181,8 @@
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Clipper.cpp" />
     <ClCompile Include="Coin.cpp" />
+    <ClCompile Include="CoinAnimation.cpp" />
+    <ClCompile Include="CoinAnimator.cpp" />
     <ClCompile Include="CollisionChecker.cpp" />
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="Game.cpp" />
