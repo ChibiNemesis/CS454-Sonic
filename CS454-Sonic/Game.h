@@ -21,6 +21,11 @@
 #define RIGHT 1
 #define COINS 20
 
+#define INPUTS_NUM 3
+#define MOVE_LEFT_BTN 0
+#define MOVE_RIGHT_BTN 1
+#define JUMP_BTN 2
+
 class Game {
 private:
 	SDL_Rect ViewWindow;
@@ -39,6 +44,9 @@ private:
 	int coins = 0;
 	int time_minutes = 0;
 	int time_seconds = 0;
+
+	//INPUTS
+	bool Inputs[4];
 
 	SDL_Window* win = nullptr;
 	SDL_Surface* winsurface = nullptr;
@@ -68,6 +76,7 @@ private:
 
 	void Render();
 	void Input();
+	void InputHandler();
 	void Animate();
 	void Physics();
 public:

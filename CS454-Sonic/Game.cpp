@@ -118,18 +118,52 @@ int Game::getfps()
 	return this->fps;
 }
 
+void Game::InputHandler() {
+	int x=0, y=0;
+
+	if (Inputs[MOVE_LEFT_BTN]) {
+		x = -movement_offset;
+	}
+
+	if (Inputs[MOVE_RIGHT_BTN]) {
+		x = movement_offset;
+	}
+
+	if (Inputs[JUMP_BTN]) {
+		y = -movement_offset;
+	}
+
+	ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+}
+
 void Game::Input()
 {
 	SDL_Event event;
 	if (SDL_PollEvent(&event)) {
+		for (int i = 0; i < INPUTS_NUM; i++) {
+			Inputs[i] = false;
+		}
 		if (event.type == SDL_KEYDOWN) {
 			ismoving = false;
+
+
+			if (event.key.keysym.sym == SDLK_a) {
+				Inputs[MOVE_LEFT_BTN] = true;
+			}
+
+			if (event.key.keysym.sym == SDLK_d) {
+				Inputs[MOVE_RIGHT_BTN] = true;
+			}
+
+			if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_SPACE) {
+				Inputs[JUMP_BTN] = true;
+			}
 
 			//TODO: Create an Array that represents the keys (Left, Right, Jump, ...)
 			//This array will be used in other functions
 			//Remove ScrollwithBoundsCheck and call it after input, but use 2 movement offsets based on the input
 			//ex. ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset_x, movement_offset_y);
-			if (event.key.keysym.sym == SDLK_RIGHT) {
+			/*if (event.key.keysym.sym == SDLK_RIGHT) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset, 0);
 				direction = RIGHT;
 				ismoving = true;
@@ -149,7 +183,7 @@ void Game::Input()
 				ScrollWithBoundsCheck(&map, &ViewWindow, 0, movement_offset);
 				direction = LEFT;
 				ismoving = true;
-			}
+			}*/
 
 			//Test, code when player collides with a coin
 			if (event.key.keysym.sym == SDLK_0) {
@@ -193,6 +227,7 @@ void Game::mainloop()
 	if (loopCounter == fps)
 		loopCounter = 1;
 	Input();
+	InputHandler();
 	Render();
 	Physics();
 	Animate();
