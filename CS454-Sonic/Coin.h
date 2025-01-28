@@ -1,6 +1,8 @@
 #pragma once
 #include "Sprite.h"
 #include "CoinAnimation.h"
+#include "CoinAnimator.h"
+#include "SystemClock.h"
 class Coin :
     public Sprite
 {
@@ -13,9 +15,12 @@ public:
     void SetCollected(bool _collected);
     bool GetCollected();
 
+    void Progress(timestamp_t _time);
+
 private:
     bool IsCollected;
-    //CoinAnimation animation;
+    CoinAnimation *animation = NULL;
+    CoinAnimator* animator = NULL;
 
     void OnCollected();
 };

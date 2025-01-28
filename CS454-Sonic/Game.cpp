@@ -167,7 +167,10 @@ void Game::Physics()
 
 void Game::Animate()
 {
-	tickanimator->Progress(GetSystemTime());
+	auto time = GetSystemTime();
+	tickanimator->Progress(time);
+
+	Coins[0]->Progress(time);
 }
 
 void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)

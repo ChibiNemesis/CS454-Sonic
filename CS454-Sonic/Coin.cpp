@@ -2,6 +2,11 @@
 
 Coin::Coin(){
 	IsCollected = false;
+
+	animation = new CoinAnimation(this->typeId+"-anim", (int&)this->frameNo);
+	animation->SetMaxFrames(this->currFilm->GetTotalFrames());
+	animator = new CoinAnimator();
+	animator->Start(*animation, GetSystemTime());
 }
 
 Coin::Coin(int _x, int _y, AnimationFilm* film, const std::string& _typeId)
@@ -12,6 +17,11 @@ Coin::Coin(int _x, int _y, AnimationFilm* film, const std::string& _typeId)
 	typeId = copy;
 	SetAnimationFilm(film);
 	IsCollected = false;
+
+	animation = new CoinAnimation(this->typeId + "-anim", (int&)this->frameNo);
+	animation->SetMaxFrames(this->currFilm->GetTotalFrames());
+	animator = new CoinAnimator();
+	animator->Start(*animation, GetSystemTime());
 }
 
 void Coin::Display(SDL_Surface& dest, const SDL_Rect& dpyArea) const
@@ -35,6 +45,11 @@ void Coin::SetCollected(bool _collected)
 bool Coin::GetCollected()
 {
 	return IsCollected;
+}
+
+void Coin::Progress(timestamp_t _time)
+{
+	animator->Progress(_time);
 }
 
 void Coin::OnCollected()
