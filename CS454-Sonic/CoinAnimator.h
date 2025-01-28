@@ -9,8 +9,6 @@ class CoinAnimator :
 {
 protected:
     CoinAnimation* anim = NULL;
-
-	void Finish(bool isForced = false);
 public:
     CoinAnimator();
     void Progress(timestamp_t currTime) override;
@@ -21,7 +19,7 @@ public:
 		state = ANIMATOR_RUNNING;
 		NotifyStarted();
 	}
-
     void SetAnimation(CoinAnimation* _anim);
+	void Finish(bool isForced = false);
 };
 

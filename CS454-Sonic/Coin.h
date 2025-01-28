@@ -16,6 +16,7 @@ public:
     bool GetCollected();
 
     void Progress(timestamp_t _time);
+    void DestroyCoin();
 
 private:
     bool IsCollected;

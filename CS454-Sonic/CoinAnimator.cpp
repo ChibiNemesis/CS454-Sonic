@@ -15,9 +15,6 @@ void CoinAnimator::Progress(timestamp_t currTime)
 			lastTime = currTime;
 			anim->UpdateCurrentFrame();
 		}
-		
-		//std::cout << "frameNo -> " << anim->GetCurrentFrame() <<"\n";
-		//td::cout << "Max Frames -> " << anim->GetMaxFrames() << "\n";
 	}
 }
 

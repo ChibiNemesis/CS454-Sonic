@@ -15,6 +15,7 @@
 #include<iostream>
 #include "Character.h"
 #include "Coin.h"
+#include"SDL_mixer.h"
 
 #define LEFT 0
 #define RIGHT 1
@@ -23,6 +24,8 @@
 class Game {
 private:
 	SDL_Rect ViewWindow;
+	Mix_Music* music;
+	Mix_Chunk* ringSound;
 	bool running = true;
 	bool ismoving = false;
 	int movement_offset;

@@ -52,6 +52,11 @@ void Coin::Progress(timestamp_t _time)
 	animator->Progress(_time);
 }
 
+void Coin::DestroyCoin()
+{
+	animator->Finish(true);
+}
+
 void Coin::OnCollected()
 {
 	

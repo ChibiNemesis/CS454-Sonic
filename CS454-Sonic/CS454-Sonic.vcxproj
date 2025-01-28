@@ -75,8 +75,8 @@
     <LibraryPath>C:\SDL2\lib\x64;C:\SDL2_image\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>C:\SDL2_image\lib\x86;C:\SDL2\lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\SDL2_image\include;C:\SDL2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\SDL_Mixer\lib\x86;C:\SDL2_image\lib\x86;C:\SDL2\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\SDL_Mixer\include;C:\SDL2_image\include;C:\SDL2\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -89,8 +89,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\SDL2\lib\x86;C:\SDL2_image\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\SDL2\lib\x86;C:\SDL2_image\lib\x86;C:\SDL_Mixer\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

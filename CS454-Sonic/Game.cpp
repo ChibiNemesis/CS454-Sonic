@@ -4,6 +4,19 @@ Game::Game(std::string name, int height, int width)
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
+	Mix_Init(MIX_INIT_MP3);
+	Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 1024);
+	music = Mix_LoadMUS("Audio\\ambience.mp3");
+	ringSound = Mix_LoadWAV("Audio\\ring.mp3");
+	if (!music) {
+		std::cout << "Music Error: " << Mix_GetError() << "\n";
+	}
+	if (!ringSound) {
+		std::cout << "Ring Sound Error: " << Mix_GetError() << "\n";
+	}
+	if (music != NULL) {
+		Mix_PlayMusic(music, -1);
+	}
 
 	loopCounter = 0;
 	change_iter = 0;
@@ -111,6 +124,11 @@ void Game::Input()
 	if (SDL_PollEvent(&event)) {
 		if (event.type == SDL_KEYDOWN) {
 			ismoving = false;
+
+			//TODO: Create an Array that represents the keys (Left, Right, Jump, ...)
+			//This array will be used in other functions
+			//Remove ScrollwithBoundsCheck and call it after input, but use 2 movement offsets based on the input
+			//ex. ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset_x, movement_offset_y);
 			if (event.key.keysym.sym == SDLK_RIGHT) {
 				ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset, 0);
 				direction = RIGHT;
@@ -131,6 +149,20 @@ void Game::Input()
 				ScrollWithBoundsCheck(&map, &ViewWindow, 0, movement_offset);
 				direction = LEFT;
 				ismoving = true;
+			}
+
+			//Test, code when player collides with a coin
+			if (event.key.keysym.sym == SDLK_0) {
+				Mix_PlayChannel(-1, ringSound, 0);
+				Coins[1]->DestroyCoin();
+				int coin_in = 1;
+				CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), coin_in));
+				//int index;
+				//for (auto c = 0; c < CoinVec.size(); c++) {
+				//	if (c == CoinVec.at(c)) {
+				//
+				//	}
+				//}
 			}
 
 			if (event.key.keysym.sym == SDLK_ESCAPE) {
