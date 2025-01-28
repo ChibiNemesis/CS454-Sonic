@@ -11,13 +11,14 @@
 #include"TickAnimation.h"
 #include"TickAnimator.h"
 #include"SystemClock.h"
-
+#include<vector>
 #include<iostream>
 #include "Character.h"
 #include "Coin.h"
 
 #define LEFT 0
 #define RIGHT 1
+#define COINS 20
 
 class Game {
 private:
@@ -47,7 +48,7 @@ private:
 
 	//Character and Coin are subclasses of sprite
 	Character* character = NULL;
-	Coin *Coins[20];
+	Coin *Coins[COINS];
 
 	//Not sure if we need 1 or more films
 	AnimationFilm* LeftMovementFilm = NULL;
@@ -59,6 +60,8 @@ private:
 
 	TickAnimation* tickanimation = NULL;
 	TickAnimator* tickanimator = NULL;
+
+	std::vector<int> CoinVec;
 
 	void Render();
 	void Input();

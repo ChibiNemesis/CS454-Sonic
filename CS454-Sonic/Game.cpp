@@ -12,7 +12,7 @@ Game::Game(std::string name, int height, int width)
 
 	//viewwindow on tilemap
 	ViewWindow.x = 0;
-	ViewWindow.y = 0; //150
+	ViewWindow.y = 150; 
 	ViewWindow.w = width;
 	ViewWindow.h = height;
 	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
@@ -46,18 +46,31 @@ Game::Game(std::string name, int height, int width)
 	character = new Character();
 
 
+
+
 	//Rings Setup
-	//Rings Bitmap format:
-	// Number of frames
-	// lines with those frames with format: x, y, width, height
+	for (auto r = 0; r < COINS; r++) {
+		CoinVec.push_back(r);
+	}
 	std::string Ring_Surface_path = "tilesets\\misc_fixed.png";
 	std::string Ring_Rects_Path = "Animation\\Coins\\coinBitmapPos.txt";
-	std::string Ring_Pos_Path = "Animation\\Coins\\Coin0.txt";
 	SDL_Surface *Ring_Surface = IMG_Load(Ring_Surface_path.c_str());
 	AnimationFilm *coin_Film = new AnimationFilm(Ring_Surface, Ring_Rects_Path, "Coin-Film-0");
 	//Coins[0].SetAnimationFilm(coin_Film);
-	Coins[0] = new Coin(256, 320, coin_Film, "Coin-0");
+	//Coins[0] = new Coin(100, 295, coin_Film, "Coin-0"); //256, 320
+	//Coins[1] = new Coin(296, 320, coin_Film, "Coin-1");
+	for (auto c = 0; c < COINS; c++) {
+		std::string Ring_Pos_Path = "Animation\\Coins\\Coin"+std::to_string(c)+ ".txt";
+		//Initialize coin to correct position
+		std::ifstream input{ Ring_Pos_Path };
+		std::string line, x, y;
+		std::getline(input, line);
+		std::istringstream ss(std::move(line));
+		std::getline(ss, x, ' ');
+		std::getline(ss, y, ' ');
 
+		Coins[c] = new Coin(stoi(x), stoi(y), coin_Film, "Coin-" + std::to_string(c));
+	}
 }
 
 Game::~Game()
@@ -170,7 +183,11 @@ void Game::Animate()
 	auto time = GetSystemTime();
 	tickanimator->Progress(time);
 
-	Coins[0]->Progress(time);
+	//Coins[0]->Progress(time);
+	//Coins[1]->Progress(time);
+	for (auto val : CoinVec) {
+		Coins[val]->Progress(time);
+	}
 }
 
 void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)
@@ -183,15 +200,21 @@ void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)
 
 void Game::Render()
 {
-	//int w,h;
-	//SDL_GetWindowSize(win, &w, &h);
 	SDL_Rect displayArea = { 0, 0, NULL, NULL };
 	display.TileTerrainDisplay(&map, &Foregroundmap ,*winsurface, ViewWindow, displayArea);
 
 	//Test coins rendering
 	//SDL_Rect Coin_Rect{256, 320, 0, 0};
-	SDL_Rect Coin_Rect{ 100 - ViewWindow.x, 295 - ViewWindow.y, 16, 16 }; //4*moving_offset + 256
-	Coins[0]->Display(*winsurface, Coin_Rect);//moving +x ->coin goes -x... moving -x -> coin goes +x
+	//SDL_Rect Coin_Rect{ Coins[0]->GetBox().x - ViewWindow.x, Coins[0]->GetBox().y - ViewWindow.y, 16, 16};
+	//Coins[0]->Display(*winsurface, Coin_Rect);
+	//SDL_Rect Coin_Rect2{ 150 - ViewWindow.x, 295 - ViewWindow.y, 16, 16 };
+	//Coins[1]->Display(*winsurface, Coin_Rect2);
+
+	//Render all available coins
+	for (auto val : CoinVec) {
+		SDL_Rect Coin_Rect{ Coins[val]->GetBox().x - ViewWindow.x, Coins[val]->GetBox().y - ViewWindow.y, 16, 16 };
+		Coins[val]->Display(*winsurface, Coin_Rect);
+	}
 
 	assert(!SDL_UpdateWindowSurface(win));
 }

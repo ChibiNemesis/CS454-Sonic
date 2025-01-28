@@ -12,7 +12,6 @@ void CoinAnimator::Progress(timestamp_t currTime)
 {
 	if (state == ANIMATOR_RUNNING) {
 		if((currTime - lastTime) > COIN_WAITING_TIME){
-			std::cout << "curr - last -> " << (currTime - lastTime) << "\n";
 			lastTime = currTime;
 			anim->UpdateCurrentFrame();
 		}
