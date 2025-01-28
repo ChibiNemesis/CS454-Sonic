@@ -21,10 +21,11 @@
 #define RIGHT 1
 #define COINS 20
 
-#define INPUTS_NUM 3
+#define INPUTS_MAX 4
 #define MOVE_LEFT_BTN 0
 #define MOVE_RIGHT_BTN 1
 #define JUMP_BTN 2
+#define MOVE_DOWN_BTN 3
 
 class Game {
 private:
@@ -46,7 +47,8 @@ private:
 	int time_seconds = 0;
 
 	//INPUTS
-	bool Inputs[4];
+	//bool Inputs[INPUTS_MAX];
+	bool Inputs[SDL_NUM_SCANCODES]; //512
 
 	SDL_Window* win = nullptr;
 	SDL_Surface* winsurface = nullptr;

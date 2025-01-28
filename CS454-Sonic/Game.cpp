@@ -121,16 +121,36 @@ int Game::getfps()
 void Game::InputHandler() {
 	int x=0, y=0;
 
-	if (Inputs[MOVE_LEFT_BTN]) {
+	//if (Inputs[MOVE_LEFT_BTN]) {
+	//	x = -movement_offset;
+	//}
+	//
+	//if (Inputs[MOVE_RIGHT_BTN]) {
+	//	x = movement_offset;
+	//}
+
+	//if (Inputs[JUMP_BTN]) {
+	//	y = -movement_offset;
+	//}
+
+	//if (Inputs[MOVE_DOWN_BTN]) { //This doesn't exist, needs to be removed. For Debugging purposes only.
+	//	y = movement_offset;
+	//}
+
+	if (Inputs[SDL_SCANCODE_LEFT]) {
 		x = -movement_offset;
 	}
-
-	if (Inputs[MOVE_RIGHT_BTN]) {
+	
+	if (Inputs[SDL_SCANCODE_RIGHT]) {
 		x = movement_offset;
 	}
 
-	if (Inputs[JUMP_BTN]) {
+	if (Inputs[SDL_SCANCODE_UP]) {
 		y = -movement_offset;
+	}
+
+	if (Inputs[SDL_SCANCODE_DOWN]) { //This doesn't exist, needs to be removed. For Debugging purposes only.
+		y = movement_offset;
 	}
 
 	ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
@@ -139,74 +159,92 @@ void Game::InputHandler() {
 void Game::Input()
 {
 	SDL_Event event;
-	if (SDL_PollEvent(&event)) {
-		for (int i = 0; i < INPUTS_NUM; i++) {
-			Inputs[i] = false;
-		}
+	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_KEYDOWN) {
-			ismoving = false;
-
-
-			if (event.key.keysym.sym == SDLK_a) {
-				Inputs[MOVE_LEFT_BTN] = true;
-			}
-
-			if (event.key.keysym.sym == SDLK_d) {
-				Inputs[MOVE_RIGHT_BTN] = true;
-			}
-
-			if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_SPACE) {
-				Inputs[JUMP_BTN] = true;
-			}
-
-			//TODO: Create an Array that represents the keys (Left, Right, Jump, ...)
-			//This array will be used in other functions
-			//Remove ScrollwithBoundsCheck and call it after input, but use 2 movement offsets based on the input
-			//ex. ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset_x, movement_offset_y);
-			/*if (event.key.keysym.sym == SDLK_RIGHT) {
-				ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset, 0);
-				direction = RIGHT;
-				ismoving = true;
-			}
-			else if (event.key.keysym.sym == SDLK_LEFT) {
-				ScrollWithBoundsCheck(&map, &ViewWindow, -movement_offset, 0);
-				direction = LEFT;
-				ismoving = true;
-			}
-
-			if (event.key.keysym.sym == SDLK_UP) {
-				ScrollWithBoundsCheck(&map, &ViewWindow, 0, -movement_offset);
-				direction = RIGHT;
-				ismoving = true;
-			}
-			else if (event.key.keysym.sym == SDLK_DOWN) {
-				ScrollWithBoundsCheck(&map, &ViewWindow, 0, movement_offset);
-				direction = LEFT;
-				ismoving = true;
-			}*/
-
-			//Test, code when player collides with a coin
-			if (event.key.keysym.sym == SDLK_0) {
-				Mix_PlayChannel(-1, ringSound, 0);
-				Coins[1]->DestroyCoin();
-				int coin_in = 1;
-				CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), coin_in));
-				//int index;
-				//for (auto c = 0; c < CoinVec.size(); c++) {
-				//	if (c == CoinVec.at(c)) {
-				//
-				//	}
-				//}
-			}
-
-			if (event.key.keysym.sym == SDLK_ESCAPE) {
-				this->stoprunning();
-			}
+			Inputs[event.key.keysym.scancode] = true; // Set key state to true
+		}
+		else if (event.type == SDL_KEYUP) {
+			Inputs[event.key.keysym.scancode] = false; // Reset key state to false
 		}
 		else if (event.type == SDL_QUIT) {
 			stoprunning();
 		}
 	}
+
+	//if (SDL_PollEvent(&event)) {
+	//	if (event.type == SDL_KEYDOWN) {
+	//		ismoving = false;
+
+
+	//		if (event.key.keysym.sym == SDLK_a) {
+	//			Inputs[MOVE_LEFT_BTN] = true;
+	//		}
+
+	//		if (event.key.keysym.sym == SDLK_d) {
+	//			Inputs[MOVE_RIGHT_BTN] = true;
+	//		}
+
+	//		if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_SPACE) {
+	//			Inputs[JUMP_BTN] = true;
+	//		}
+
+	//		if (event.key.keysym.sym == SDLK_s) {
+	//			Inputs[MOVE_DOWN_BTN] = true;
+	//		}
+
+	//		//TODO: Create an Array that represents the keys (Left, Right, Jump, ...)
+	//		//This array will be used in other functions
+	//		//Remove ScrollwithBoundsCheck and call it after input, but use 2 movement offsets based on the input
+	//		//ex. ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset_x, movement_offset_y);
+	//		/*if (event.key.keysym.sym == SDLK_RIGHT) {
+	//			ScrollWithBoundsCheck(&map, &ViewWindow, movement_offset, 0);
+	//			direction = RIGHT;
+	//			ismoving = true;
+	//		}
+	//		else if (event.key.keysym.sym == SDLK_LEFT) {
+	//			ScrollWithBoundsCheck(&map, &ViewWindow, -movement_offset, 0);
+	//			direction = LEFT;
+	//			ismoving = true;
+	//		}
+
+	//		if (event.key.keysym.sym == SDLK_UP) {
+	//			ScrollWithBoundsCheck(&map, &ViewWindow, 0, -movement_offset);
+	//			direction = RIGHT;
+	//			ismoving = true;
+	//		}
+	//		else if (event.key.keysym.sym == SDLK_DOWN) {
+	//			ScrollWithBoundsCheck(&map, &ViewWindow, 0, movement_offset);
+	//			direction = LEFT;
+	//			ismoving = true;
+	//		}*/
+
+	//		//Test, code when player collides with a coin
+	//		if (event.key.keysym.sym == SDLK_0) {
+	//			Mix_PlayChannel(-1, ringSound, 0);
+	//			Coins[1]->DestroyCoin();
+	//			int coin_in = 1;
+	//			CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), coin_in));
+	//			//int index;
+	//			//for (auto c = 0; c < CoinVec.size(); c++) {
+	//			//	if (c == CoinVec.at(c)) {
+	//			//
+	//			//	}
+	//			//}
+	//		}
+
+	//		if (event.key.keysym.sym == SDLK_ESCAPE) {
+	//			this->stoprunning();
+	//		}
+	//	}
+	//	else if (event.type == SDL_QUIT) {
+	//		stoprunning();
+	//	}
+	//	else if(event.type == SDL_KEYUP){ //event.type == SDL_KEYUP
+	//		for (int i = 0; i < INPUTS_MAX; i++) {
+	//			Inputs[i] = false;
+	//		}
+	//	}
+	// }
 }
 
 void Game::SetTilemap(std::string path)
