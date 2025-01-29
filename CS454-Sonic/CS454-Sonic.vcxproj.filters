@@ -126,6 +126,12 @@
     <ClInclude Include="CoinAnimator.h">
       <Filter>Header Files\Animation</Filter>
     </ClInclude>
+    <ClInclude Include="SonicAnimation.h">
+      <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="SonicAnimator.h">
+      <Filter>Header Files\Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animator.cpp">
@@ -191,8 +197,14 @@
     <ClCompile Include="CoinAnimator.cpp">
       <Filter>Source Files\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="SonicAnimation.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="SonicAnimator.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
     <ClCompile Include="Animation.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Animation</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -163,6 +163,8 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scroll.h" />
     <ClInclude Include="simpleclasses.h" />
+    <ClInclude Include="SonicAnimation.h" />
+    <ClInclude Include="SonicAnimator.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="SystemClock.h" />
@@ -190,6 +192,8 @@
     <ClCompile Include="GridLayer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Scroll.cpp" />
+    <ClCompile Include="SonicAnimation.cpp" />
+    <ClCompile Include="SonicAnimator.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SystemClock.cpp" />
     <ClCompile Include="TickAnimator.cpp" />
