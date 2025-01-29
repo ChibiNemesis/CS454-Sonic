@@ -120,6 +120,9 @@ int Game::getfps()
 
 bool debugCoinDestroyedTest = false;
 
+/// <summary>
+/// Executing the recorded Inputs.
+/// </summary>
 void Game::InputHandler() {
 	int x=0, y=0;
 
@@ -134,13 +137,38 @@ void Game::InputHandler() {
 	}else if (Inputs[SDL_SCANCODE_DOWN]) { //This doesn't exist, needs to be removed. For Debugging purposes only.
 		y = movement_offset;
 	}
-	
-	if (Inputs[SDL_SCANCODE_ESCAPE]) {
-		this->stoprunning();
+
+	ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+
+	if (Inputs[SDL_SCANCODE_MINUS]) {
+		if (scrollMultiplierapplied) {
+			if (scrollMultiplier >= 1.0f) {
+				scrollMultiplier = scrollMultiplier - 0.5f;
+				setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
+			}
+			Inputs[SDL_SCANCODE_MINUS] = false;
+
+			scrollMultiplierapplied = false; //To apply it only once the keyup is recorded, instead of continuously.
+		}
+	}
+	else if (Inputs[SDL_SCANCODE_EQUALS] || Inputs[SDL_SCANCODE_KP_PLUS]) {
+		if (scrollMultiplierapplied) {
+			if (scrollMultiplier <= 2.0f) {
+				scrollMultiplier = scrollMultiplier + 0.5f;
+				setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
+			}
+			Inputs[SDL_SCANCODE_EQUALS] = false;
+			Inputs[SDL_SCANCODE_KP_PLUS] = false;
+
+			scrollMultiplierapplied = false;
+		}
+	}
+	else if (Inputs[SDL_SCANCODE_0]) {
+		setmovementspeed(DEFAULT_MOVEMENT_SPEED);
 	}
 
 	//Test, code when player collides with a coin
-	if (Inputs[SDL_SCANCODE_0] && debugCoinDestroyedTest==false) {
+	if (Inputs[SDL_SCANCODE_1] && debugCoinDestroyedTest==false) {
 		Mix_PlayChannel(-1, ringSound, 0);
 		Coins[1]->DestroyCoin();
 		int coin_in = 1;
@@ -154,9 +182,14 @@ void Game::InputHandler() {
 		debugCoinDestroyedTest = true;
 	}
 
-	ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	if (Inputs[SDL_SCANCODE_ESCAPE]) {
+		this->stoprunning();
+	}
 }
 
+/// <summary>
+/// Input Polling & Recording to bool array.
+/// </summary>
 void Game::Input()
 {
 	SDL_Event event;
@@ -165,8 +198,45 @@ void Game::Input()
 			Inputs[event.key.keysym.scancode] = true;
 		}
 		else if (event.type == SDL_KEYUP) {
-			Inputs[event.key.keysym.scancode] = false;
-		}
+			switch (event.key.keysym.scancode) { // For button presses that we want to read once.
+				case SDL_SCANCODE_MINUS:
+					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_EQUALS:
+					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_KP_PLUS:
+					scrollMultiplierapplied = true;
+					break;
+				default:						// For continuous button reads.
+					Inputs[event.key.keysym.scancode] = false;
+					break;
+			}
+		}else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                isMouseDragging = true;
+                lastMouseX = event.button.x;
+                lastMouseY = event.button.y;
+            }
+        }
+        else if (event.type == SDL_MOUSEBUTTONUP) {
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                isMouseDragging = false;
+            }
+        }
+        else if (event.type == SDL_MOUSEMOTION) {
+            if (isMouseDragging) {
+                int deltaX = event.motion.x - lastMouseX;
+                int deltaY = event.motion.y - lastMouseY;
+                
+                // Move the map view
+                ScrollWithBoundsCheck(&map, &ViewWindow, -deltaX * scrollMultiplier, -deltaY * scrollMultiplier);
+                
+                // Update last mouse position
+                lastMouseX = event.motion.x;
+                lastMouseY = event.motion.y;
+            }
+        }
 		else if (event.type == SDL_QUIT) {
 			stoprunning();
 		}
@@ -188,21 +258,23 @@ void Game::mainloop()
 	const double frameDelay = 1000.0 / targetFPS; // Milliseconds per frame (~16.67ms)
 	Uint32 lastTime = SDL_GetTicks();          // Time at the start of the frame
 	double lag = 0.0;
+	Uint32 currentTime = lastTime;
+	double elapsed = 0;
 
 	while (getrunning()) {
-		Uint32 currentTime = SDL_GetTicks();   // Current time
-		double elapsed = currentTime - lastTime; // Time since last frame
+		currentTime = SDL_GetTicks();   // Current time
+		elapsed = currentTime - lastTime; // Time since last frame
 		lastTime = currentTime;
 		lag += elapsed;
-		Input();	     // Poll and update input
 
-		while (lag >= frameDelay) {
+		Render();
+		Input();	     // Poll and record the inputs
+		Animate();
+		while (lag >= frameDelay) { // Anything in here runs at a fixed rate, not as soon as it can.
 			InputHandler(); // Handle logic for inputs
 			Physics();
-			Animate();
 			lag -= frameDelay;
 		}
-		Render();
 	}
 	//Uint32 start = SDL_GetTicks();
 	

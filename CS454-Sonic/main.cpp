@@ -4,7 +4,7 @@
 int main() {
     Game* game = new Game("Sonic The Hedghog", 480, 640);
     game->setfps(30); //probably useless
-    game->setmovementspeed(15);
+    game->setmovementspeed(DEFAULT_MOVEMENT_SPEED);
 
     while (game->getrunning()) {
         game->mainloop();

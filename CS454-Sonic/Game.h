@@ -21,6 +21,8 @@
 #define RIGHT 1
 #define COINS 20
 
+#define DEFAULT_MOVEMENT_SPEED 15
+
 class Game {
 private:
 	SDL_Rect ViewWindow;
@@ -42,6 +44,11 @@ private:
 
 	//INPUTS
 	bool Inputs[SDL_NUM_SCANCODES]; //512
+	bool isMouseDragging = false;
+	int lastMouseX = 0, lastMouseY = 0; // Store previous mouse position
+	double  scrollMultiplier = 1.0f;
+	bool scrollMultiplierapplied = false;
+
 
 	SDL_Window* win = nullptr;
 	SDL_Surface* winsurface = nullptr;
