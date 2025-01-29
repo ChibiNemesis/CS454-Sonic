@@ -153,7 +153,7 @@ void Game::InputHandler() {
 	}
 	else if (Inputs[SDL_SCANCODE_EQUALS] || Inputs[SDL_SCANCODE_KP_PLUS]) {
 		if (scrollMultiplierapplied) {
-			if (scrollMultiplier <= 2.0f) {
+			if (scrollMultiplier <= 1.5f) {
 				scrollMultiplier = scrollMultiplier + 0.5f;
 				setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
 			}
@@ -164,7 +164,8 @@ void Game::InputHandler() {
 		}
 	}
 	else if (Inputs[SDL_SCANCODE_0]) {
-		setmovementspeed(DEFAULT_MOVEMENT_SPEED);
+		scrollMultiplier = 1.0f;
+		setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
 	}
 
 	//Test, code when player collides with a coin
