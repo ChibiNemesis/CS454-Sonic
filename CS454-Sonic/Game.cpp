@@ -128,17 +128,26 @@ void Game::InputHandler() {
 
 	if (Inputs[SDL_SCANCODE_LEFT]) {
 		x = -movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 	}else if (Inputs[SDL_SCANCODE_RIGHT]) {
 		x = movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 	}
 	
 	if (Inputs[SDL_SCANCODE_UP]) {
 		y = -movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 	}else if (Inputs[SDL_SCANCODE_DOWN]) { //This doesn't exist, needs to be removed. For Debugging purposes only.
 		y = movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 	}
 
-	ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	if (Inputs[SDL_SCANCODE_HOME] || Inputs[SDL_SCANCODE_KP_1]) {
+		Scroll(&ViewWindow, -ViewWindow.x, -ViewWindow.y);
+	}
+	else if (Inputs[SDL_SCANCODE_END] || Inputs[SDL_SCANCODE_KP_7]) {
+		Scroll(&ViewWindow, ((map.getWidth() * 64) - ViewWindow.x) -ViewWindow.w, ((map.getHeight() * 64) - ViewWindow.y) - ViewWindow.h);
+	}
 
 	if (Inputs[SDL_SCANCODE_MINUS]) {
 		if (scrollMultiplierapplied) {
