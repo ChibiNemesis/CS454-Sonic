@@ -16,10 +16,12 @@
 #include "Character.h"
 #include "Coin.h"
 #include"SDL_mixer.h"
+#include"Flower.h"
 
 #define LEFT 0
 #define RIGHT 1
 #define COINS 20
+#define FLOWERS 4
 
 #define DEFAULT_MOVEMENT_SPEED 15
 
@@ -59,9 +61,10 @@ private:
 	TerrainNode* terrains = NULL;
 	TerrainNode* current_terrain = NULL;
 
-	//Character and Coin are subclasses of sprite
+	//Character, Coin and Flower are subclasses of sprite
 	Character* character = NULL;
 	Coin *Coins[COINS];
+	Flower* Flowers[FLOWERS];
 
 	//Not sure if we need 1 or more films
 	AnimationFilm* LeftMovementFilm = NULL;

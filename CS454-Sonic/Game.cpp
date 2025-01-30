@@ -69,9 +69,7 @@ Game::Game(std::string name, int height, int width)
 	std::string Ring_Rects_Path = "Animation\\Coins\\coinBitmapPos.txt";
 	SDL_Surface *Ring_Surface = IMG_Load(Ring_Surface_path.c_str());
 	AnimationFilm *coin_Film = new AnimationFilm(Ring_Surface, Ring_Rects_Path, "Coin-Film-0");
-	//Coins[0].SetAnimationFilm(coin_Film);
-	//Coins[0] = new Coin(100, 295, coin_Film, "Coin-0"); //256, 320
-	//Coins[1] = new Coin(296, 320, coin_Film, "Coin-1");
+
 	for (auto c = 0; c < COINS; c++) {
 		std::string Ring_Pos_Path = "Animation\\Coins\\Coin"+std::to_string(c)+ ".txt";
 		//Initialize coin to correct position
@@ -83,6 +81,31 @@ Game::Game(std::string name, int height, int width)
 		std::getline(ss, y, ' ');
 
 		Coins[c] = new Coin(stoi(x), stoi(y), coin_Film, "Coin-" + std::to_string(c));
+	}
+
+	//Flowers Setup
+	std::string Flowers_Surface_Path = "tilesets\\flowers.png";
+	std::string Tulip_Rects_Path = "Animation\\Flowers\\Frames\\Tulip.txt";
+	std::string Lily_Rects_Path = "Animation\\Flowers\\Frames\\Lily.txt";
+	std::string Sunflower_Rects_Path = "Animation\\Flowers\\Frames\\Sunflower.txt";
+	SDL_Surface* Flower_Surface = IMG_Load(Flowers_Surface_Path.c_str());
+	AnimationFilm* Tulip_Film = new AnimationFilm(Flower_Surface, Tulip_Rects_Path, "Tulip-Film");
+	AnimationFilm* Sunflower_Film = new AnimationFilm(Flower_Surface, Sunflower_Rects_Path, "Sunflower-Film");
+	AnimationFilm* Lily_Film = new AnimationFilm(Flower_Surface, Lily_Rects_Path, "Lily-Film");
+	AnimationFilm* flower_films[3] = {Tulip_Film, Sunflower_Film, Lily_Film};
+	
+	int Flower_Type[FLOWERS] = { 0,1,1,1 };
+	for (auto f = 0; f < FLOWERS; f++) {
+		std::string Flower_Pos_Path = "Animation\\Flowers\\Positions\\Flower" + std::to_string(f) + ".txt";
+
+		std::ifstream input{ Flower_Pos_Path };
+		std::string line, x, y;
+		std::getline(input, line);
+		std::istringstream ss(std::move(line));
+		std::getline(ss, x, ' ');
+		std::getline(ss, y, ' ');
+
+		Flowers[f] = new Flower(stoi(x), stoi(y), flower_films[Flower_Type[f]], "Flower-" + std::to_string(f));
 	}
 }
 
@@ -322,6 +345,10 @@ void Game::Animate()
 	for (auto val : CoinVec) {
 		Coins[val]->Progress(time);
 	}
+
+	for (auto f = 0; f < FLOWERS; f++) {
+		Flowers[f]->Progress(time);
+	}
 }
 
 void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)
@@ -337,16 +364,25 @@ void Game::Render()
 	SDL_Rect displayArea = { 0, 0, NULL, NULL };
 	display.TileTerrainDisplay(&map, &Foregroundmap ,*winsurface, ViewWindow, displayArea);
 
-	//Test coins rendering
-	//SDL_Rect Coin_Rect{256, 320, 0, 0};
-	//SDL_Rect Coin_Rect{ Coins[0]->GetBox().x - ViewWindow.x, Coins[0]->GetBox().y - ViewWindow.y, 16, 16};
-	//Coins[0]->Display(*winsurface, Coin_Rect);
-	//SDL_Rect Coin_Rect2{ 150 - ViewWindow.x, 295 - ViewWindow.y, 16, 16 };
-	//Coins[1]->Display(*winsurface, Coin_Rect2);
+	//Render Flowers After Background and Foreground
+	for (auto f = 0; f < FLOWERS; f++) {
+		SDL_Rect Flower_Rect{ 
+			Flowers[f]->GetBox().x - ViewWindow.x, 
+			Flowers[f]->GetBox().y - ViewWindow.y, 
+			Flowers[f]->GetBox().w, 
+			Flowers[f]->GetBox().h 
+		};
+		Flowers[f]->Display(*winsurface, Flower_Rect);
+	}
 
 	//Render all available coins
 	for (auto val : CoinVec) {
-		SDL_Rect Coin_Rect{ Coins[val]->GetBox().x - ViewWindow.x, Coins[val]->GetBox().y - ViewWindow.y, 16, 16 };
+		SDL_Rect Coin_Rect{ 
+			Coins[val]->GetBox().x - ViewWindow.x, 
+			Coins[val]->GetBox().y - ViewWindow.y, 
+			16, 
+			16 
+		};
 		Coins[val]->Display(*winsurface, Coin_Rect);
 	}
 

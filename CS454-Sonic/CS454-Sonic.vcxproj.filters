@@ -37,20 +37,32 @@
     <Filter Include="Source Files\Other">
       <UniqueIdentifier>{2ef88dde-852e-4437-8238-96d8c809a5c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Animation\Coins">
+      <UniqueIdentifier>{aafe0b24-6c62-4cc5-bc73-2b13b9cfb722}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation\Flowers">
+      <UniqueIdentifier>{0ec129fe-7264-4974-8993-9e2e31663f90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation\General">
+      <UniqueIdentifier>{95a44b99-5e42-4c41-9801-f71f499f8fcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation\Sonic">
+      <UniqueIdentifier>{2c654d6d-eacd-4df8-a1a8-473338e1db42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Animation\General">
+      <UniqueIdentifier>{e0680d6f-1715-4156-ab8c-6753e7a2ab3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Animation\Flowers">
+      <UniqueIdentifier>{18d72d74-afc4-4366-978f-0528328a06ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Animation\Coins">
+      <UniqueIdentifier>{37db6850-7ff3-484f-be04-60647bcd7694}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Animation\Sonic">
+      <UniqueIdentifier>{01f3ff9e-367a-494f-9562-ab8d9d20b15b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animation.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimationFilm.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Animator.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimatorManager.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
     <ClInclude Include="BitmapLoader.h">
       <Filter>Header Files\Display</Filter>
     </ClInclude>
@@ -87,9 +99,6 @@
     <ClInclude Include="GridLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AnimationFilmHolder.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
     <ClInclude Include="BoundingArea.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
@@ -120,26 +129,44 @@
     <ClInclude Include="Coin.h">
       <Filter>Header Files\Display</Filter>
     </ClInclude>
+    <ClInclude Include="Flower.h">
+      <Filter>Header Files\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Header Files\Animation\General</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationFilm.h">
+      <Filter>Header Files\Animation\General</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationFilmHolder.h">
+      <Filter>Header Files\Animation\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Animator.h">
+      <Filter>Header Files\Animation\General</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimatorManager.h">
+      <Filter>Header Files\Animation\General</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowerAnimation.h">
+      <Filter>Header Files\Animation\Flowers</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowerAnimator.h">
+      <Filter>Header Files\Animation\Flowers</Filter>
+    </ClInclude>
     <ClInclude Include="CoinAnimation.h">
-      <Filter>Header Files\Animation</Filter>
+      <Filter>Header Files\Animation\Coins</Filter>
     </ClInclude>
     <ClInclude Include="CoinAnimator.h">
-      <Filter>Header Files\Animation</Filter>
+      <Filter>Header Files\Animation\Coins</Filter>
     </ClInclude>
     <ClInclude Include="SonicAnimation.h">
-      <Filter>Header Files\Animation</Filter>
+      <Filter>Header Files\Animation\Sonic</Filter>
     </ClInclude>
     <ClInclude Include="SonicAnimator.h">
-      <Filter>Header Files\Animation</Filter>
+      <Filter>Header Files\Animation\Sonic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animator.cpp">
-      <Filter>Source Files\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimatorManager.cpp">
-      <Filter>Source Files\Animation</Filter>
-    </ClCompile>
     <ClCompile Include="Clipper.cpp">
       <Filter>Source Files\Display</Filter>
     </ClCompile>
@@ -163,9 +190,6 @@
     </ClCompile>
     <ClCompile Include="GridLayer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationFilmHolder.cpp">
-      <Filter>Source Files\Animation</Filter>
     </ClCompile>
     <ClCompile Include="BoundingArea.cpp">
       <Filter>Source Files\Physics</Filter>
@@ -191,20 +215,38 @@
     <ClCompile Include="Coin.cpp">
       <Filter>Source Files\Display</Filter>
     </ClCompile>
-    <ClCompile Include="CoinAnimation.cpp">
-      <Filter>Source Files\Animation</Filter>
+    <ClCompile Include="Flower.cpp">
+      <Filter>Source Files\Display</Filter>
     </ClCompile>
     <ClCompile Include="CoinAnimator.cpp">
-      <Filter>Source Files\Animation</Filter>
+      <Filter>Source Files\Animation\Coins</Filter>
     </ClCompile>
-    <ClCompile Include="SonicAnimation.cpp">
-      <Filter>Source Files\Animation</Filter>
+    <ClCompile Include="CoinAnimation.cpp">
+      <Filter>Source Files\Animation\Coins</Filter>
     </ClCompile>
-    <ClCompile Include="SonicAnimator.cpp">
-      <Filter>Source Files\Animation</Filter>
+    <ClCompile Include="FlowerAnimation.cpp">
+      <Filter>Source Files\Animation\Flowers</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowerAnimator.cpp">
+      <Filter>Source Files\Animation\Flowers</Filter>
     </ClCompile>
     <ClCompile Include="Animation.cpp">
-      <Filter>Source Files\Animation</Filter>
+      <Filter>Source Files\Animation\General</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationFilmHolder.cpp">
+      <Filter>Source Files\Animation\General</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimatorManager.cpp">
+      <Filter>Source Files\Animation\General</Filter>
+    </ClCompile>
+    <ClCompile Include="Animator.cpp">
+      <Filter>Source Files\Animation\General</Filter>
+    </ClCompile>
+    <ClCompile Include="SonicAnimation.cpp">
+      <Filter>Source Files\Animation\Sonic</Filter>
+    </ClCompile>
+    <ClCompile Include="SonicAnimator.cpp">
+      <Filter>Source Files\Animation\Sonic</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

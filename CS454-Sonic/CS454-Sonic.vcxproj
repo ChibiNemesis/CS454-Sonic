@@ -156,6 +156,9 @@
     <ClInclude Include="CoinAnimator.h" />
     <ClInclude Include="CollisionChecker.h" />
     <ClInclude Include="Display.h" />
+    <ClInclude Include="Flower.h" />
+    <ClInclude Include="FlowerAnimation.h" />
+    <ClInclude Include="FlowerAnimator.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GravityHandler.h" />
     <ClInclude Include="GridLayer.h" />
@@ -187,6 +190,9 @@
     <ClCompile Include="CoinAnimator.cpp" />
     <ClCompile Include="CollisionChecker.cpp" />
     <ClCompile Include="Display.cpp" />
+    <ClCompile Include="Flower.cpp" />
+    <ClCompile Include="FlowerAnimation.cpp" />
+    <ClCompile Include="FlowerAnimator.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GravityHandler.cpp" />
     <ClCompile Include="GridLayer.cpp" />
