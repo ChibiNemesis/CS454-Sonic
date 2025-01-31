@@ -1,8 +1,16 @@
 #include "Game.h"
 
-Game::Game(std::string name, int height, int width)
+
+Game::Game(std::string name, int width, int height)
 {
-	SDL_Init(SDL_INIT_EVERYTHING);
+	// Initialize SDL. SDL_Init will return -1 if it fails.
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+		std::cout << "Error initializing SDL: " << SDL_GetError() << std::endl;
+		system("pause");
+		// End the program
+		return ;
+	}
+
 	IMG_Init(IMG_INIT_PNG);
 	Mix_Init(MIX_INIT_MP3);
 	Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 1024);
@@ -28,8 +36,14 @@ Game::Game(std::string name, int height, int width)
 	ViewWindow.y = 150; 
 	ViewWindow.w = width;
 	ViewWindow.h = height;
-	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN //SDL_WINDOW_FULLSCREEN_DESKTOP
 	winsurface = SDL_GetWindowSurface(win);
+	// Fill the window with a white rectangle
+	SDL_FillRect(winsurface, NULL, SDL_MapRGB(winsurface->format, 255, 255, 255));
+
+
+	// Update the window display
+	SDL_UpdateWindowSurface(win);
 	movement_offset = 0;
 
 	//set correct tileset for background and front tiles
@@ -57,8 +71,6 @@ Game::Game(std::string name, int height, int width)
 	
 	//Use the correct constructor here
 	character = new Character();
-
-
 
 
 	//Rings Setup
@@ -172,13 +184,14 @@ void Game::InputHandler() {
 		Scroll(&ViewWindow, ((map.getWidth() * 64) - ViewWindow.x) -ViewWindow.w, ((map.getHeight() * 64) - ViewWindow.y) - ViewWindow.h);
 	}
 
-	if (Inputs[SDL_SCANCODE_MINUS]) {
+	if (Inputs[SDL_SCANCODE_MINUS] || Inputs[SDL_SCANCODE_KP_MINUS]) {
 		if (scrollMultiplierapplied) {
 			if (scrollMultiplier >= 1.0f) {
 				scrollMultiplier = scrollMultiplier - 0.5f;
 				setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
 			}
 			Inputs[SDL_SCANCODE_MINUS] = false;
+			Inputs[SDL_SCANCODE_KP_MINUS] = false;
 
 			scrollMultiplierapplied = false; //To apply it only once the keyup is recorded, instead of continuously.
 		}
@@ -239,6 +252,9 @@ void Game::Input()
 					scrollMultiplierapplied = true;
 					break;
 				case SDL_SCANCODE_KP_PLUS:
+					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_KP_MINUS:
 					scrollMultiplierapplied = true;
 					break;
 				default:						// For continuous button reads.
