@@ -13,8 +13,8 @@
 #define MAX_HEIGHT 2000
 
 
-#define GRID_ELEMENT_WIDTH 4 //could this be 16?
-#define GRID_ELEMENT_HEIGHT 4
+#define GRID_ELEMENT_WIDTH 16 //could this be 4
+#define GRID_ELEMENT_HEIGHT 16
 #if TILE_WIDTH % GRID_ELEMENT_WIDTH != 0
 #error "TILE_WIDTH % GRID_ELEMENT_WIDTH must be zero!"
 #endif

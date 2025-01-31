@@ -66,11 +66,14 @@ private:
 	Coin *Coins[COINS];
 	Flower* Flowers[FLOWERS];
 
-	//Not sure if we need 1 or more films
+	//One AnimationFilm for every possible diretion
 	AnimationFilm* LeftMovementFilm = NULL;
 	AnimationFilm* RightMovementFilm = NULL;
-	AnimationFilm* LeftIdleMovementFilm = NULL;
-	AnimationFilm* RightIdleMovementFilm = NULL;
+	AnimationFilm* LeftIdleFilm = NULL;
+	AnimationFilm* RightIdleFilm = NULL;
+	AnimationFilm* LeftJumpFilm = NULL;
+	AnimationFilm* RightJumpFilm = NULL;
+	AnimationFilm* WinFilm = NULL;
 
 	Animation* currAnimation = NULL;
 
