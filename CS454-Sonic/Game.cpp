@@ -54,12 +54,43 @@ Game::Game(std::string name, int height, int width)
 	tickanimation = new TickAnimation("Anim-0",50,1,false);
 	tickanimator = new TickAnimator();
 	tickanimator->Start(*tickanimation, GetSystemTime());
-	
-	//Use the correct constructor here
-	character = new Character();
 
+	//Setup sonic animation films
+	//Surface paths
+	std::string LeftMovementPath = "tilesets\\SonicWalkingLeft.png";
+	std::string RightMovementPath = "tilesets\\SonicWalkingRight.png";
+	std::string LeftJumpPath = "tilesets\\SonicJumpLeft.png";
+	std::string RightJumpPath = "tilesets\\SonicJumpRight.png";
+	std::string LeftIdlePath = "tilesets\\SonicIdleLeft.png";
+	std::string RightIdlePath = "tilesets\\SonicIdleRight.png";
+	std::string WinPath = "tilesets\\SonicWin.png";
+	SDL_Surface* LeftMovementSurface = IMG_Load(LeftMovementPath.c_str());
+	SDL_Surface* RightMovementSurface = IMG_Load(RightMovementPath.c_str());
+	SDL_Surface* LeftJumpSurface = IMG_Load(LeftJumpPath.c_str());
+	SDL_Surface* RightJumpSurface = IMG_Load(RightJumpPath.c_str());
+	SDL_Surface* LeftIdleSurface = IMG_Load(LeftIdlePath.c_str());
+	SDL_Surface* RightIdleSurface = IMG_Load(RightIdlePath.c_str());
+	SDL_Surface* WinSurface = IMG_Load(WinPath.c_str());
 
+	//Rect paths
+	std::string LeftMovementRectPath = "Animation\\Sonic\\SonicWalkLeft.txt";
+	std::string RightMovementRectPath = "Animation\\Sonic\\SonicWalkRight.txt";
+	std::string LeftJumpRectPath = "Animation\\Sonic\\SonicJumpLeft.txt";
+	std::string RightJumpRectPath = "Animation\\Sonic\\SonicJumpRight.txt";
+	std::string LeftIdleRectPath = "Animation\\Sonic\\SonicIdleLeft.txt";
+	std::string RightIdleRectPath = "Animation\\Sonic\\SonicIdleRight.txt";
+	std::string WinRectPath = "Animation\\Sonic\\SonicWin.txt";
 
+	//Now, initialize all necessary films
+	LeftMovementFilm = new AnimationFilm(LeftMovementSurface, LeftMovementRectPath, "Sonic-Left");
+	RightMovementFilm = new AnimationFilm(RightMovementSurface, RightMovementRectPath, "Sonic-Right");
+	LeftIdleFilm = new AnimationFilm(LeftIdleSurface, LeftIdleRectPath, "Sonic-Left-Idle");
+	RightIdleFilm = new AnimationFilm(RightIdleSurface, RightIdleRectPath, "Sonic-Right-Idle");
+	LeftJumpFilm = new AnimationFilm(LeftJumpSurface, LeftJumpRectPath, "Sonic-Left-Jump");
+	RightJumpFilm = new AnimationFilm(RightJumpSurface, RightJumpRectPath, "Sonic-Right-Jump");
+	WinFilm = new AnimationFilm(WinSurface, WinRectPath, "Sonic-win");
+
+	character = new Character(158, 276, RightIdleFilm, "Sonic");
 
 	//Rings Setup
 	for (auto r = 0; r < COINS; r++) {
@@ -149,12 +180,34 @@ bool debugCoinDestroyedTest = false;
 void Game::InputHandler() {
 	int x=0, y=0;
 
+	std::string film_id = character->GetCurrentFilm()->GetId();
+
+	//TODO: better code here
+	character->directMotion = true;// This will change change
+	if (!Inputs[SDL_SCANCODE_LEFT] && !Inputs[SDL_SCANCODE_RIGHT] && film_id!="Sonic-Right-Idle" && film_id!="Sonic-Left-Idle") {
+		if (direction == LEFT)
+			character->SetAnimationFilm(LeftIdleFilm);
+		else {
+			character->SetAnimationFilm(RightIdleFilm);
+		}
+	}
+
 	if (Inputs[SDL_SCANCODE_LEFT]) {
 		x = -movement_offset;
 		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
-	}else if (Inputs[SDL_SCANCODE_RIGHT]) {
+		direction = LEFT;
+		if (film_id != "Sonic-Left") {
+			character->SetAnimationFilm(LeftMovementFilm);
+		}
+		//call this with use of physics checks first
+		//character->Move(-movement_offset, 0);
+	}
+	else if (Inputs[SDL_SCANCODE_RIGHT]) {
 		x = movement_offset;
 		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		direction = RIGHT;
+		if (film_id != "Sonic-Right") { character->SetAnimationFilm(RightMovementFilm);}
+		//character->Move(movement_offset, 0);
 	}
 	
 	if (Inputs[SDL_SCANCODE_UP]) {
@@ -349,6 +402,8 @@ void Game::Animate()
 	for (auto f = 0; f < FLOWERS; f++) {
 		Flowers[f]->Progress(time);
 	}
+
+	character->Progress(time);
 }
 
 void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)
@@ -385,6 +440,15 @@ void Game::Render()
 		};
 		Coins[val]->Display(*winsurface, Coin_Rect);
 	}
+
+	//Render Character after animation and physics are done
+	SDL_Rect Character_Rect = {
+		character->GetBox().x - ViewWindow.x,
+		character->GetBox().y - ViewWindow.y,
+		character->GetBox().w,
+		character->GetBox().h
+	};
+	character->Display(*winsurface, Character_Rect);
 
 	assert(!SDL_UpdateWindowSurface(win));
 }
