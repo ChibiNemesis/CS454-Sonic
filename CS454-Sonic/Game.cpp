@@ -8,12 +8,12 @@ Game::Game(std::string name, int width, int height)
 		std::cout << "Error initializing SDL: " << SDL_GetError() << std::endl;
 		system("pause");
 		// End the program
-		return ;
+		return;
 	}
 
 	IMG_Init(IMG_INIT_PNG);
 	Mix_Init(MIX_INIT_MP3);
-	Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 1024);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 	music = Mix_LoadMUS("Audio\\ambience.mp3");
 	ringSound = Mix_LoadWAV("Audio\\ring.mp3");
 	if (!music) {
@@ -33,11 +33,11 @@ Game::Game(std::string name, int width, int height)
 
 	//viewwindow on tilemap
 	ViewWindow.x = 0;
-	ViewWindow.y = 150; 
+	ViewWindow.y = 150;
 	ViewWindow.w = width;
 	ViewWindow.h = height;
 	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN //SDL_WINDOW_FULLSCREEN_DESKTOP
-	
+
 	Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
 	if (!rend)
@@ -46,7 +46,7 @@ Game::Game(std::string name, int width, int height)
 		SDL_Quit();
 		return;
 	}
-	
+
 	winsurface = SDL_GetWindowSurface(win);
 	// Fill the window with a white rectangle
 	SDL_FillRect(winsurface, NULL, SDL_MapRGB(winsurface->format, 255, 255, 255));
@@ -75,7 +75,7 @@ Game::Game(std::string name, int width, int height)
 
 
 	//use this type of animation to update the elapsed time
-	tickanimation = new TickAnimation("Anim-0",50,1,false);
+	tickanimation = new TickAnimation("Anim-0", 50, 1, false);
 	tickanimator = new TickAnimator();
 	tickanimator->Start(*tickanimation, GetSystemTime());
 
@@ -122,11 +122,11 @@ Game::Game(std::string name, int width, int height)
 	}
 	std::string Ring_Surface_path = "tilesets\\misc_fixed.png";
 	std::string Ring_Rects_Path = "Animation\\Coins\\coinBitmapPos.txt";
-	SDL_Surface *Ring_Surface = IMG_Load(Ring_Surface_path.c_str());
-	AnimationFilm *coin_Film = new AnimationFilm(Ring_Surface, Ring_Rects_Path, "Coin-Film-0");
+	SDL_Surface* Ring_Surface = IMG_Load(Ring_Surface_path.c_str());
+	AnimationFilm* coin_Film = new AnimationFilm(Ring_Surface, Ring_Rects_Path, "Coin-Film-0");
 
 	for (auto c = 0; c < COINS; c++) {
-		std::string Ring_Pos_Path = "Animation\\Coins\\Coin"+std::to_string(c)+ ".txt";
+		std::string Ring_Pos_Path = "Animation\\Coins\\Coin" + std::to_string(c) + ".txt";
 		//Initialize coin to correct position
 		std::ifstream input{ Ring_Pos_Path };
 		std::string line, x, y;
@@ -147,8 +147,8 @@ Game::Game(std::string name, int width, int height)
 	AnimationFilm* Tulip_Film = new AnimationFilm(Flower_Surface, Tulip_Rects_Path, "Tulip-Film");
 	AnimationFilm* Sunflower_Film = new AnimationFilm(Flower_Surface, Sunflower_Rects_Path, "Sunflower-Film");
 	AnimationFilm* Lily_Film = new AnimationFilm(Flower_Surface, Lily_Rects_Path, "Lily-Film");
-	AnimationFilm* flower_films[3] = {Tulip_Film, Sunflower_Film, Lily_Film};
-	
+	AnimationFilm* flower_films[3] = { Tulip_Film, Sunflower_Film, Lily_Film };
+
 	int Flower_Type[FLOWERS] = { 0,1,1,1 };
 	for (auto f = 0; f < FLOWERS; f++) {
 		std::string Flower_Pos_Path = "Animation\\Flowers\\Positions\\Flower" + std::to_string(f) + ".txt";
@@ -301,187 +301,266 @@ void Game::InputHandler()
 	HandleScrolling();
 	HandleScrollingMultiplier();
 	HandleCharacterMovements();
-	
+
 	// Test coin collision code:
 	if (Inputs[SDL_SCANCODE_1] && !debugCoinDestroyedTest) {
-		Mix_PlayChannel(-1, ringSound, 0);
-		Coins[1]->DestroyCoin();
-		int coin_in = 1;
-		CoinVec.erase(std::find(CoinVec.begin(), CoinVec.end(), coin_in));
-		debugCoinDestroyedTest = true;
-	}
+		//Test, code when player collides with a coin
+		/*if (Inputs[SDL_SCANCODE_1] && debugCoinDestroyedTest == false) {
+			Mix_PlayChannel(-1, ringSound, 0);
+			Coins[1]->DestroyCoin();
+			int coin_in = 1;
+			CoinVec.erase(std::find(CoinVec.begin(), CoinVec.end(), coin_in));
+			debugCoinDestroyedTest = true;
+		}*/
 
-	if (Inputs[SDL_SCANCODE_ESCAPE]) {
-		stoprunning();
-	}
-}
-
-/// <summary>
-/// Input Polling & Recording to bool array.
-/// </summary>
-void Game::Input() {
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_KEYDOWN) {
-			Inputs[event.key.keysym.scancode] = true;
-		}
-		else if (event.type == SDL_KEYUP) {
-			switch (event.key.keysym.scancode) { // For button presses that we want to read once.
-			case SDL_SCANCODE_MINUS:
-				scrollMultiplierapplied = true;
-				break;
-			case SDL_SCANCODE_EQUALS:
-				scrollMultiplierapplied = true;
-				break;
-			case SDL_SCANCODE_KP_PLUS:
-				scrollMultiplierapplied = true;
-				break;
-			case SDL_SCANCODE_KP_MINUS:
-				scrollMultiplierapplied = true;
-				break;
-			default:  // For continuous button reads.
-				Inputs[event.key.keysym.scancode] = false;
-				break;
-			}
-		}
-		else if (event.type == SDL_MOUSEBUTTONDOWN) {
-			if (event.button.button == SDL_BUTTON_LEFT) {
-				isMouseDragging = true;
-				lastMouseX = event.button.x;
-				lastMouseY = event.button.y;
-			}
-		}
-		else if (event.type == SDL_MOUSEBUTTONUP) {
-			if (event.button.button == SDL_BUTTON_LEFT) {
-				isMouseDragging = false;
-				// Optionally reset delta here if you want to avoid a sudden jump
-				mouseDeltaX = 0;
-				mouseDeltaY = 0;
-			}
-		}
-		else if (event.type == SDL_MOUSEMOTION) {
-			if (isMouseDragging) {
-				// Calculate movement since last event
-				int deltaX = event.motion.x - lastMouseX;
-				int deltaY = event.motion.y - lastMouseY;
-				// Accumulate the delta
-				mouseDeltaX += deltaX;
-				mouseDeltaY += deltaY;
-				// Update last position
-				lastMouseX = event.motion.x;
-				lastMouseY = event.motion.y;
-			}
-		}
-		else if (event.type == SDL_QUIT) {
+		if (Inputs[SDL_SCANCODE_ESCAPE]) {
 			stoprunning();
 		}
 	}
 }
 
-void Game::SetTilemap(std::string path)
-{
-	assert(map.ReadTextMap(path));
-}
-
-void Game::change_Tilemap() {
-	this->SetTilemap(current_terrain->path + "\\Tilemap.txt");
-}
-
-void Game::mainloop()
-{
-	const Uint32 FIXED_FPS = 60; // Used to Decouple Physics/InputHandling from Rendering.
-	const double physicsUpdateInterval = 1000.0 / FIXED_FPS; // e.g., ~33.33ms per fixed update
-
-	Uint32 currentTime = SDL_GetTicks();
-	Uint32 lastPhysicsUpdateTime = currentTime;
-	double deltaTime = 0;
-
-	while (getrunning()) {
-		Render();   // Render the scene
-		Input();    // Poll and record input events
-		Animate();  // Update animations
-
-		// Check if it's time to update physics and input logic
-		currentTime = SDL_GetTicks();
-		deltaTime = currentTime - lastPhysicsUpdateTime;
-		if (deltaTime >= physicsUpdateInterval) {
-			InputHandler(); // Process input logic
-			Physics();      // Update physics
-			lastPhysicsUpdateTime = currentTime;
+	/// <summary>
+	/// Input Polling & Recording to bool array.
+	/// </summary>
+	void Game::Input() {
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_KEYDOWN) {
+				Inputs[event.key.keysym.scancode] = true;
+			}
+			else if (event.type == SDL_KEYUP) {
+				switch (event.key.keysym.scancode) { // For button presses that we want to read once.
+				case SDL_SCANCODE_MINUS:
+					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_EQUALS:
+					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_KP_PLUS:
+					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_KP_MINUS:
+					scrollMultiplierapplied = true;
+					break;
+				default:  // For continuous button reads.
+					Inputs[event.key.keysym.scancode] = false;
+					break;
+				}
+			}
+			else if (event.type == SDL_MOUSEBUTTONDOWN) {
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					isMouseDragging = true;
+					lastMouseX = event.button.x;
+					lastMouseY = event.button.y;
+				}
+			}
+			else if (event.type == SDL_MOUSEBUTTONUP) {
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					isMouseDragging = false;
+					// Optionally reset delta here if you want to avoid a sudden jump
+					mouseDeltaX = 0;
+					mouseDeltaY = 0;
+				}
+			}
+			else if (event.type == SDL_MOUSEMOTION) {
+				if (isMouseDragging) {
+					// Calculate movement since last event
+					int deltaX = event.motion.x - lastMouseX;
+					int deltaY = event.motion.y - lastMouseY;
+					// Accumulate the delta
+					mouseDeltaX += deltaX;
+					mouseDeltaY += deltaY;
+					// Update last position
+					lastMouseX = event.motion.x;
+					lastMouseY = event.motion.y;
+				}
+			}
+			else if (event.type == SDL_QUIT) {
+				stoprunning();
+			}
 		}
-		// Delay to yield CPU
-		SDL_Delay(1);
-	}
-}
-
-void Game::Physics()
-{
-	//Here check if player box has collided with any coin
-	//in that case, set the rendering parameter on that coin to false and play a sound
-
-}
-
-void Game::Animate()
-{
-	auto time = GetSystemTime();
-	tickanimator->Progress(time);
-
-	//Coins[0]->Progress(time);
-	//Coins[1]->Progress(time);
-	for (auto val : CoinVec) {
-		Coins[val]->Progress(time);
 	}
 
-	for (auto f = 0; f < FLOWERS; f++) {
-		Flowers[f]->Progress(time);
+	void Game::SetTilemap(std::string path)
+	{
+		assert(map.ReadTextMap(path));
 	}
 
-	character->Progress(time);
-}
+	void Game::change_Tilemap() {
+		this->SetTilemap(current_terrain->path + "\\Tilemap.txt");
+	}
 
-void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)
-{
-	character->GetGravityHandler().SetOnSolidGround(
-		[gridLayer](const SDL_Rect& r)
-		{ return gridLayer->IsOnSolidGround(r); }
-	);
-}
+	void Game::mainloop()
+	{
+		const Uint32 FIXED_FPS = 60; // Used to Decouple Physics/InputHandling from Rendering.
+		const double physicsUpdateInterval = 1000.0 / FIXED_FPS; // e.g., ~33.33ms per fixed update
 
-void Game::Render()
-{
-	SDL_Rect displayArea = { 0, 0, NULL, NULL };
-	display.TileTerrainDisplay(&map, &Foregroundmap ,*winsurface, ViewWindow, displayArea);
+		Uint32 currentTime = SDL_GetTicks();
+		Uint32 lastPhysicsUpdateTime = currentTime;
+		double deltaTime = 0;
 
-	//Render Flowers After Background and Foreground
-	for (auto f = 0; f < FLOWERS; f++) {
-		SDL_Rect Flower_Rect{ 
-			Flowers[f]->GetBox().x - ViewWindow.x, 
-			Flowers[f]->GetBox().y - ViewWindow.y, 
-			Flowers[f]->GetBox().w, 
-			Flowers[f]->GetBox().h 
+		while (getrunning()) {
+			Render();   // Render the scene
+			Input();    // Poll and record input events
+			Animate();  // Update animations
+
+			// Check if it's time to update physics and input logic
+			currentTime = SDL_GetTicks();
+			deltaTime = currentTime - lastPhysicsUpdateTime;
+			if (deltaTime >= physicsUpdateInterval) {
+				InputHandler(); // Process input logic
+				Physics();      // Update physics
+				lastPhysicsUpdateTime = currentTime;
+			}
+			// Delay to yield CPU
+			SDL_Delay(1);
+			FixCameraPos(ViewWindow);
+		}
+	}
+
+	void Game::Physics()
+	{
+		//Here check if player box has collided with any coin
+		//in that case, set the rendering parameter on that coin to false and play a sound
+		for (auto val : CoinVec) {
+			auto cb = character->GetBox();
+			auto coinb = Coins[val]->GetBox();
+			BoundingBox* CharacterBox = new BoundingBox(cb.x, cb.y, cb.x + cb.w, cb.y + cb.h);
+			BoundingBox* RingBox = new BoundingBox(coinb.x, coinb.y, coinb.x + coinb.w, coinb.y + coinb.h);
+			if (CharacterBox->Intersects(*RingBox)) {
+				Coins[val]->SetCollected(true);
+				Coins[val]->DestroyCoin();
+				Mix_PlayChannel(-1, ringSound, 0);
+
+				CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), val));
+			}
+			CharacterBox->~BoundingBox();
+			RingBox->~BoundingBox();
+		}
+
+	}
+
+	void Game::Animate()
+	{
+		auto time = GetSystemTime();
+		tickanimator->Progress(time);
+
+		//Coins[0]->Progress(time);
+		//Coins[1]->Progress(time);
+		for (auto val : CoinVec) {
+			Coins[val]->Progress(time);
+		}
+
+		for (auto f = 0; f < FLOWERS; f++) {
+			Flowers[f]->Progress(time);
+		}
+
+		character->Progress(time);
+	}
+
+	void Game::PrepareSpriteGravityHandler(GridLayer * gridLayer, Sprite * sprite)
+	{
+		character->GetGravityHandler().SetOnSolidGround(
+			[gridLayer](const SDL_Rect& r)
+			{ return gridLayer->IsOnSolidGround(r); }
+		);
+	}
+
+	void Game::FixCameraPos(SDL_Rect & ViewWin)
+	{
+		FixCameraPosX(ViewWin);
+		FixCameraPosY(ViewWin);
+	}
+
+	void Game::FixCameraPosX(SDL_Rect & ViewWin)
+	{
+		auto CharacterPos = character->GetBox();
+		auto x_center = (ViewWin.x + (ViewWin.w / 2));
+		auto x_modifier = 0;
+		if ((CharacterPos.x) != x_center) {
+			if (abs(x_modifier - (x_center - CharacterPos.x)) < CAMERASCROLLMODIFIER) {
+				if (x_center > (CharacterPos.x)) {
+					x_modifier = -abs(x_modifier - (x_center - CharacterPos.x));
+				}
+				else {
+					x_modifier = abs(x_modifier - (x_center - CharacterPos.x));
+				}
+			}
+			else {
+				if (x_center > (CharacterPos.x)) {
+					x_modifier = -CAMERASCROLLMODIFIER;
+				}
+				else {
+					x_modifier = CAMERASCROLLMODIFIER;
+				}
+			}
+		}
+
+		ScrollWithBoundsCheck(&map, &ViewWin, x_modifier, 0);
+	}
+
+	void Game::FixCameraPosY(SDL_Rect & ViewWin)
+	{
+		auto CharacterPos = character->GetBox();
+		auto y_center = (ViewWin.y + (ViewWin.h / 2));
+		auto y_modifier = 0;
+		if ((CharacterPos.y) != y_center) {
+			if (abs(y_modifier - (y_center - CharacterPos.y)) < CAMERASCROLLMODIFIER) {
+				if (y_center > (CharacterPos.x)) {
+					y_modifier = -abs(y_modifier - (y_center - CharacterPos.y));
+				}
+				else {
+					y_modifier = abs(y_modifier - (y_center - CharacterPos.y));
+				}
+			}
+			else {
+				if (y_center > (CharacterPos.y)) {
+					y_modifier = -CAMERASCROLLMODIFIER;
+				}
+				else {
+					y_modifier = CAMERASCROLLMODIFIER;
+				}
+			}
+		}
+
+		ScrollWithBoundsCheck(&map, &ViewWin, 0, y_modifier);
+	}
+
+	void Game::Render()
+	{
+		SDL_Rect displayArea = { 0, 0, NULL, NULL };
+		display.TileTerrainDisplay(&map, &Foregroundmap, *winsurface, ViewWindow, displayArea);
+
+		//Render Flowers After Background and Foreground
+		for (auto f = 0; f < FLOWERS; f++) {
+			SDL_Rect Flower_Rect{
+				Flowers[f]->GetBox().x - ViewWindow.x,
+				Flowers[f]->GetBox().y - ViewWindow.y,
+				Flowers[f]->GetBox().w,
+				Flowers[f]->GetBox().h
+			};
+			Flowers[f]->Display(*winsurface, Flower_Rect);
+		}
+
+		//Render all available coins
+		for (auto val : CoinVec) {
+			SDL_Rect Coin_Rect{
+				Coins[val]->GetBox().x - ViewWindow.x,
+				Coins[val]->GetBox().y - ViewWindow.y,
+				16,
+				16
+			};
+			Coins[val]->Display(*winsurface, Coin_Rect);
+		}
+
+		//Render Character after animation and physics are done
+		SDL_Rect Character_Rect = {
+			character->GetBox().x - ViewWindow.x,
+			character->GetBox().y - ViewWindow.y,
+			character->GetBox().w,
+			character->GetBox().h
 		};
-		Flowers[f]->Display(*winsurface, Flower_Rect);
+		character->Display(*winsurface, Character_Rect);
+
+		assert(!SDL_UpdateWindowSurface(win));
 	}
-
-	//Render all available coins
-	for (auto val : CoinVec) {
-		SDL_Rect Coin_Rect{ 
-			Coins[val]->GetBox().x - ViewWindow.x, 
-			Coins[val]->GetBox().y - ViewWindow.y, 
-			16, 
-			16 
-		};
-		Coins[val]->Display(*winsurface, Coin_Rect);
-	}
-
-	//Render Character after animation and physics are done
-	SDL_Rect Character_Rect = {
-		character->GetBox().x - ViewWindow.x,
-		character->GetBox().y - ViewWindow.y,
-		character->GetBox().w,
-		character->GetBox().h
-	};
-	character->Display(*winsurface, Character_Rect);
-
-	assert(!SDL_UpdateWindowSurface(win));
-}

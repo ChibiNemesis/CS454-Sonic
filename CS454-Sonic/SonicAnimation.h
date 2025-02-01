@@ -1,7 +1,7 @@
 #pragma once
 #include "Animation.h"
 
-#define SONIC_SPRITE_DELAY 200
+#define SONIC_SPRITE_DELAY 400
 
 class SonicAnimation : public Animation
 {

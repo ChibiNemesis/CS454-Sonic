@@ -17,6 +17,7 @@
 #include "Coin.h"
 #include"SDL_mixer.h"
 #include"Flower.h"
+#include"BoundingBox.h"
 
 #define LEFT 0
 #define RIGHT 1
@@ -24,6 +25,8 @@
 #define FLOWERS 4
 
 #define DEFAULT_MOVEMENT_SPEED 15
+#define SCROLLDELAY 100
+#define CAMERASCROLLMODIFIER 2
 
 class Game {
 private:
@@ -116,6 +119,12 @@ public:
 	void change_Tilemap();
 
 	void mainloop();
+
+	void FixCameraPos(SDL_Rect& ViewWin);
+
+	void FixCameraPosX(SDL_Rect& ViewWin);
+
+	void FixCameraPosY(SDL_Rect& ViewWin);
 
 	void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite);
 };
