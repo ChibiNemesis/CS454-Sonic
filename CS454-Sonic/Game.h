@@ -46,10 +46,14 @@ private:
 
 	//INPUTS
 	bool Inputs[SDL_NUM_SCANCODES]; //512
+	// Mouse state variables
 	bool isMouseDragging = false;
-	int lastMouseX = 0, lastMouseY = 0; // Store previous mouse position
+	int lastMouseX = 0, lastMouseY = 0; // Last recorded mouse position
+	int mouseDeltaX = 0, mouseDeltaY = 0; // Accumulated mouse movement
+	// Scrolling Speed
 	double  scrollMultiplier = 1.0f;
 	bool scrollMultiplierapplied = false;
+
 
 
 	SDL_Window* win = nullptr;
@@ -96,6 +100,12 @@ public:
 	bool getrunning();
 
 	void setfps(int _fps);
+
+	void HandleScrolling();
+
+	void HandleScrollingMultiplier();
+
+	void HandleCharacterMovements();
 
 	void setmovementspeed(int speed);
 

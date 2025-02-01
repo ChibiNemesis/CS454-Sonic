@@ -37,6 +37,16 @@ Game::Game(std::string name, int width, int height)
 	ViewWindow.w = width;
 	ViewWindow.h = height;
 	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN //SDL_WINDOW_FULLSCREEN_DESKTOP
+	
+	Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
+	if (!rend)
+	{
+		printf("error creating renderer: %s\n", SDL_GetError());
+		SDL_Quit();
+		return;
+	}
+	
 	winsurface = SDL_GetWindowSurface(win);
 	// Fill the window with a white rectangle
 	SDL_FillRect(winsurface, NULL, SDL_MapRGB(winsurface->format, 255, 255, 255));
@@ -186,80 +196,48 @@ int Game::getfps()
 	return this->fps;
 }
 
-bool debugCoinDestroyedTest = false;
-
-/// <summary>
-/// Executing the recorded Inputs.
-/// </summary>
-void Game::InputHandler() {
-	int x=0, y=0;
-
-	std::string film_id = character->GetCurrentFilm()->GetId();
-
-	//TODO: better code here
-	character->directMotion = true;// This will change change
-	if (!Inputs[SDL_SCANCODE_LEFT] && !Inputs[SDL_SCANCODE_RIGHT] && film_id!="Sonic-Right-Idle" && film_id!="Sonic-Left-Idle") {
-		if (direction == LEFT)
-			character->SetAnimationFilm(LeftIdleFilm);
-		else {
-			character->SetAnimationFilm(RightIdleFilm);
-		}
-	}
-
-	if (Inputs[SDL_SCANCODE_LEFT]) {
-		x = -movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
-		direction = LEFT;
-		if (film_id != "Sonic-Left") {
-			character->SetAnimationFilm(LeftMovementFilm);
-		}
-		//call this with use of physics checks first
-		//character->Move(-movement_offset, 0);
-	}
-	else if (Inputs[SDL_SCANCODE_RIGHT]) {
-		x = movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
-		direction = RIGHT;
-		if (film_id != "Sonic-Right") { character->SetAnimationFilm(RightMovementFilm);}
-		//character->Move(movement_offset, 0);
-	}
-	
-	if (Inputs[SDL_SCANCODE_UP]) {
-		y = -movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
-	}else if (Inputs[SDL_SCANCODE_DOWN]) { //This doesn't exist, needs to be removed. For Debugging purposes only.
-		y = movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+void Game::HandleScrolling()
+{
+	// --- Handle Mouse Dragging (accumulated) ---
+	if (isMouseDragging && (mouseDeltaX != 0 || mouseDeltaY != 0)) {
+		// Apply the accumulated mouse movement to scroll the map.
+		ScrollWithBoundsCheck(&map, &ViewWindow,
+			-mouseDeltaX * scrollMultiplier, -mouseDeltaY * scrollMultiplier);
+		mouseDeltaX = 0;
+		mouseDeltaY = 0;
 	}
 
 	if (Inputs[SDL_SCANCODE_HOME] || Inputs[SDL_SCANCODE_KP_1]) {
 		Scroll(&ViewWindow, -ViewWindow.x, -ViewWindow.y);
 	}
 	else if (Inputs[SDL_SCANCODE_END] || Inputs[SDL_SCANCODE_KP_7]) {
-		Scroll(&ViewWindow, ((map.getWidth() * 64) - ViewWindow.x) -ViewWindow.w, ((map.getHeight() * 64) - ViewWindow.y) - ViewWindow.h);
+		Scroll(&ViewWindow, ((map.getWidth() * 64) - ViewWindow.x) - ViewWindow.w,
+			((map.getHeight() * 64) - ViewWindow.y) - ViewWindow.h);
 	}
 
+}
+
+void Game::HandleScrollingMultiplier()
+{
 	if (Inputs[SDL_SCANCODE_MINUS] || Inputs[SDL_SCANCODE_KP_MINUS]) {
 		if (scrollMultiplierapplied) {
 			if (scrollMultiplier >= 1.0f) {
-				scrollMultiplier = scrollMultiplier - 0.5f;
+				scrollMultiplier -= 0.5f;
 				setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
 			}
 			Inputs[SDL_SCANCODE_MINUS] = false;
 			Inputs[SDL_SCANCODE_KP_MINUS] = false;
-
-			scrollMultiplierapplied = false; //To apply it only once the keyup is recorded, instead of continuously.
+			scrollMultiplierapplied = false;
 		}
 	}
 	else if (Inputs[SDL_SCANCODE_EQUALS] || Inputs[SDL_SCANCODE_KP_PLUS]) {
 		if (scrollMultiplierapplied) {
 			if (scrollMultiplier <= 1.5f) {
-				scrollMultiplier = scrollMultiplier + 0.5f;
+				scrollMultiplier += 0.5f;
 				setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
 			}
 			Inputs[SDL_SCANCODE_EQUALS] = false;
 			Inputs[SDL_SCANCODE_KP_PLUS] = false;
-
 			scrollMultiplierapplied = false;
 		}
 	}
@@ -268,31 +246,80 @@ void Game::InputHandler() {
 		setmovementspeed(DEFAULT_MOVEMENT_SPEED * scrollMultiplier);
 	}
 
-	//Test, code when player collides with a coin
-	if (Inputs[SDL_SCANCODE_1] && debugCoinDestroyedTest==false) {
+}
+
+void Game::HandleCharacterMovements()
+{
+	int x = 0, y = 0;
+
+	std::string film_id = character->GetCurrentFilm()->GetId();
+
+	// Keyboard input handling for character movement and scrolling:
+	character->directMotion = true;
+	if (!Inputs[SDL_SCANCODE_LEFT] && !Inputs[SDL_SCANCODE_RIGHT] &&
+		film_id != "Sonic-Right-Idle" && film_id != "Sonic-Left-Idle") {
+		if (direction == LEFT)
+			character->SetAnimationFilm(LeftIdleFilm);
+		else
+			character->SetAnimationFilm(RightIdleFilm);
+	}
+
+	if (Inputs[SDL_SCANCODE_LEFT]) {
+		x = -movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		direction = LEFT;
+		if (film_id != "Sonic-Left")
+			character->SetAnimationFilm(LeftMovementFilm);
+		character->Move(-movement_offset, 0);
+	}
+	else if (Inputs[SDL_SCANCODE_RIGHT]) {
+		x = movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		direction = RIGHT;
+		if (film_id != "Sonic-Right")
+			character->SetAnimationFilm(RightMovementFilm);
+		character->Move(movement_offset, 0);
+	}
+
+	if (Inputs[SDL_SCANCODE_UP]) {
+		y = -movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	}
+	else if (Inputs[SDL_SCANCODE_DOWN]) { // For debugging purposes
+		y = movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	}
+}
+
+bool debugCoinDestroyedTest = false;
+
+/// <summary>
+/// Executing the recorded Inputs.
+/// </summary>
+void Game::InputHandler()
+{
+	HandleScrolling();
+	HandleScrollingMultiplier();
+	HandleCharacterMovements();
+	
+	// Test coin collision code:
+	if (Inputs[SDL_SCANCODE_1] && !debugCoinDestroyedTest) {
 		Mix_PlayChannel(-1, ringSound, 0);
 		Coins[1]->DestroyCoin();
 		int coin_in = 1;
-		CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), coin_in));
-		//int index;
-		//for (auto c = 0; c < CoinVec.size(); c++) {
-		//	if (c == CoinVec.at(c)) {
-		//
-		//	}
-		//}
+		CoinVec.erase(std::find(CoinVec.begin(), CoinVec.end(), coin_in));
 		debugCoinDestroyedTest = true;
 	}
 
 	if (Inputs[SDL_SCANCODE_ESCAPE]) {
-		this->stoprunning();
+		stoprunning();
 	}
 }
 
 /// <summary>
 /// Input Polling & Recording to bool array.
 /// </summary>
-void Game::Input()
-{
+void Game::Input() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_KEYDOWN) {
@@ -300,47 +327,51 @@ void Game::Input()
 		}
 		else if (event.type == SDL_KEYUP) {
 			switch (event.key.keysym.scancode) { // For button presses that we want to read once.
-				case SDL_SCANCODE_MINUS:
-					scrollMultiplierapplied = true;
-					break;
-				case SDL_SCANCODE_EQUALS:
-					scrollMultiplierapplied = true;
-					break;
-				case SDL_SCANCODE_KP_PLUS:
-					scrollMultiplierapplied = true;
-					break;
-				case SDL_SCANCODE_KP_MINUS:
-					scrollMultiplierapplied = true;
-					break;
-				default:						// For continuous button reads.
-					Inputs[event.key.keysym.scancode] = false;
-					break;
+			case SDL_SCANCODE_MINUS:
+				scrollMultiplierapplied = true;
+				break;
+			case SDL_SCANCODE_EQUALS:
+				scrollMultiplierapplied = true;
+				break;
+			case SDL_SCANCODE_KP_PLUS:
+				scrollMultiplierapplied = true;
+				break;
+			case SDL_SCANCODE_KP_MINUS:
+				scrollMultiplierapplied = true;
+				break;
+			default:  // For continuous button reads.
+				Inputs[event.key.keysym.scancode] = false;
+				break;
 			}
-		}else if (event.type == SDL_MOUSEBUTTONDOWN) {
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                isMouseDragging = true;
-                lastMouseX = event.button.x;
-                lastMouseY = event.button.y;
-            }
-        }
-        else if (event.type == SDL_MOUSEBUTTONUP) {
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                isMouseDragging = false;
-            }
-        }
-        else if (event.type == SDL_MOUSEMOTION) {
-            if (isMouseDragging) {
-                int deltaX = event.motion.x - lastMouseX;
-                int deltaY = event.motion.y - lastMouseY;
-                
-                // Move the map view
-                ScrollWithBoundsCheck(&map, &ViewWindow, -deltaX * scrollMultiplier, -deltaY * scrollMultiplier);
-                
-                // Update last mouse position
-                lastMouseX = event.motion.x;
-                lastMouseY = event.motion.y;
-            }
-        }
+		}
+		else if (event.type == SDL_MOUSEBUTTONDOWN) {
+			if (event.button.button == SDL_BUTTON_LEFT) {
+				isMouseDragging = true;
+				lastMouseX = event.button.x;
+				lastMouseY = event.button.y;
+			}
+		}
+		else if (event.type == SDL_MOUSEBUTTONUP) {
+			if (event.button.button == SDL_BUTTON_LEFT) {
+				isMouseDragging = false;
+				// Optionally reset delta here if you want to avoid a sudden jump
+				mouseDeltaX = 0;
+				mouseDeltaY = 0;
+			}
+		}
+		else if (event.type == SDL_MOUSEMOTION) {
+			if (isMouseDragging) {
+				// Calculate movement since last event
+				int deltaX = event.motion.x - lastMouseX;
+				int deltaY = event.motion.y - lastMouseY;
+				// Accumulate the delta
+				mouseDeltaX += deltaX;
+				mouseDeltaY += deltaY;
+				// Update last position
+				lastMouseX = event.motion.x;
+				lastMouseY = event.motion.y;
+			}
+		}
 		else if (event.type == SDL_QUIT) {
 			stoprunning();
 		}
@@ -358,45 +389,29 @@ void Game::change_Tilemap() {
 
 void Game::mainloop()
 {
-	const int targetFPS = 30;                  // Desired FPS
-	const double frameDelay = 1000.0 / targetFPS; // Milliseconds per frame (~16.67ms)
-	Uint32 lastTime = SDL_GetTicks();          // Time at the start of the frame
-	double lag = 0.0;
-	Uint32 currentTime = lastTime;
-	double elapsed = 0;
+	const Uint32 FIXED_FPS = 60; // Used to Decouple Physics/InputHandling from Rendering.
+	const double physicsUpdateInterval = 1000.0 / FIXED_FPS; // e.g., ~33.33ms per fixed update
+
+	Uint32 currentTime = SDL_GetTicks();
+	Uint32 lastPhysicsUpdateTime = currentTime;
+	double deltaTime = 0;
 
 	while (getrunning()) {
-		currentTime = SDL_GetTicks();   // Current time
-		elapsed = currentTime - lastTime; // Time since last frame
-		lastTime = currentTime;
-		lag += elapsed;
+		Render();   // Render the scene
+		Input();    // Poll and record input events
+		Animate();  // Update animations
 
-		Render();
-		Input();	     // Poll and record the inputs
-		Animate();
-		while (lag >= frameDelay) { // Anything in here runs at a fixed rate, not as soon as it can.
-			InputHandler(); // Handle logic for inputs
-			Physics();
-			lag -= frameDelay;
+		// Check if it's time to update physics and input logic
+		currentTime = SDL_GetTicks();
+		deltaTime = currentTime - lastPhysicsUpdateTime;
+		if (deltaTime >= physicsUpdateInterval) {
+			InputHandler(); // Process input logic
+			Physics();      // Update physics
+			lastPhysicsUpdateTime = currentTime;
 		}
+		// Delay to yield CPU
+		SDL_Delay(1);
 	}
-	//Uint32 start = SDL_GetTicks();
-	
-	/*loopCounter++;
-	if (loopCounter == fps)
-		loopCounter = 1;
-
-
-	Input();
-	InputHandler();
-	Render();
-	Physics();
-	Animate();*/
-
-
-	//
-	//if (1000 / fps > SDL_GetTicks() - start)
-	//	SDL_Delay(1000/fps-(SDL_GetTicks() - start));
 }
 
 void Game::Physics()
