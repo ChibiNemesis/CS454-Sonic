@@ -13,7 +13,7 @@ Game::Game(std::string name, int width, int height)
 
 	IMG_Init(IMG_INIT_PNG);
 	Mix_Init(MIX_INIT_MP3);
-	Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 1024);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 	music = Mix_LoadMUS("Audio\\ambience.mp3");
 	ringSound = Mix_LoadWAV("Audio\\ring.mp3");
 	if (!music) {
@@ -208,7 +208,7 @@ void Game::InputHandler() {
 
 	if (Inputs[SDL_SCANCODE_LEFT]) {
 		x = -movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = LEFT;
 		if (film_id != "Sonic-Left") {
 			character->SetAnimationFilm(LeftMovementFilm);
@@ -218,7 +218,7 @@ void Game::InputHandler() {
 	}
 	else if (Inputs[SDL_SCANCODE_RIGHT]) {
 		x = movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = RIGHT;
 		if (film_id != "Sonic-Right") { character->SetAnimationFilm(RightMovementFilm);}
 		character->Move(movement_offset, 0);
@@ -379,6 +379,7 @@ void Game::mainloop()
 			Physics();
 			lag -= frameDelay;
 		}
+		FixCameraPos(ViewWindow);
 	}
 	//Uint32 start = SDL_GetTicks();
 	
@@ -445,6 +446,66 @@ void Game::PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite)
 		[gridLayer](const SDL_Rect& r)
 		{ return gridLayer->IsOnSolidGround(r); }
 	);
+}
+
+void Game::FixCameraPos(SDL_Rect& ViewWin)
+{
+	FixCameraPosX(ViewWin);
+	FixCameraPosY(ViewWin);
+}
+
+void Game::FixCameraPosX(SDL_Rect& ViewWin)
+{
+	auto CharacterPos = character->GetBox();
+	auto x_center = (ViewWin.x + (ViewWin.w/2));
+	auto x_modifier = 0;
+	if ((CharacterPos.x) != x_center) {
+		if (abs(x_modifier - (x_center - CharacterPos.x)) < CAMERASCROLLMODIFIER) {
+			if (x_center > (CharacterPos.x)) {
+				x_modifier = -abs(x_modifier - (x_center - CharacterPos.x));
+			}
+			else {
+				x_modifier = abs(x_modifier - (x_center - CharacterPos.x));
+			}
+		}
+		else {
+			if (x_center > (CharacterPos.x)) {
+				x_modifier = -CAMERASCROLLMODIFIER;
+			}
+			else {
+				x_modifier = CAMERASCROLLMODIFIER;
+			}
+		}
+	}
+
+	ScrollWithBoundsCheck(&map, &ViewWin ,x_modifier ,0);
+}
+
+void Game::FixCameraPosY(SDL_Rect& ViewWin)
+{
+	auto CharacterPos = character->GetBox();
+	auto y_center = (ViewWin.y + (ViewWin.h / 2));
+	auto y_modifier = 0;
+	if ((CharacterPos.y) != y_center) {
+		if (abs(y_modifier - (y_center - CharacterPos.y)) < CAMERASCROLLMODIFIER) {
+			if (y_center > (CharacterPos.x)) {
+				y_modifier = -abs(y_modifier - (y_center - CharacterPos.y));
+			}
+			else {
+				y_modifier = abs(y_modifier - (y_center - CharacterPos.y));
+			}
+		}
+		else {
+			if (y_center > (CharacterPos.y)) {
+				y_modifier = -CAMERASCROLLMODIFIER;
+			}
+			else {
+				y_modifier = CAMERASCROLLMODIFIER;
+			}
+		}
+	}
+
+	ScrollWithBoundsCheck(&map, &ViewWin, 0, y_modifier);
 }
 
 void Game::Render()
