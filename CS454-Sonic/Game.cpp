@@ -214,14 +214,14 @@ void Game::InputHandler() {
 			character->SetAnimationFilm(LeftMovementFilm);
 		}
 		//call this with use of physics checks first
-		//character->Move(-movement_offset, 0);
+		character->Move(-movement_offset, 0);
 	}
 	else if (Inputs[SDL_SCANCODE_RIGHT]) {
 		x = movement_offset;
 		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = RIGHT;
 		if (film_id != "Sonic-Right") { character->SetAnimationFilm(RightMovementFilm);}
-		//character->Move(movement_offset, 0);
+		character->Move(movement_offset, 0);
 	}
 	
 	if (Inputs[SDL_SCANCODE_UP]) {
@@ -269,7 +269,7 @@ void Game::InputHandler() {
 	}
 
 	//Test, code when player collides with a coin
-	if (Inputs[SDL_SCANCODE_1] && debugCoinDestroyedTest==false) {
+	/*if (Inputs[SDL_SCANCODE_1] && debugCoinDestroyedTest == false) {
 		Mix_PlayChannel(-1, ringSound, 0);
 		Coins[1]->DestroyCoin();
 		int coin_in = 1;
@@ -281,7 +281,7 @@ void Game::InputHandler() {
 		//	}
 		//}
 		debugCoinDestroyedTest = true;
-	}
+	}*/
 
 	if (Inputs[SDL_SCANCODE_ESCAPE]) {
 		this->stoprunning();
@@ -403,6 +403,21 @@ void Game::Physics()
 {
 	//Here check if player box has collided with any coin
 	//in that case, set the rendering parameter on that coin to false and play a sound
+	for (auto val : CoinVec) {
+		auto cb = character->GetBox();
+		auto coinb = Coins[val]->GetBox();
+		BoundingBox* CharacterBox = new BoundingBox(cb.x, cb.y, cb.x+cb.w, cb.y+cb.h);
+		BoundingBox* RingBox = new BoundingBox(coinb.x, coinb.y, coinb.x + coinb.w, coinb.y + coinb.h);
+		if (CharacterBox->Intersects(*RingBox)) {
+			Coins[val]->SetCollected(true);
+			Coins[val]->DestroyCoin();
+			Mix_PlayChannel(-1, ringSound, 0);
+
+			CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), val));
+		}
+		CharacterBox->~BoundingBox();
+		RingBox->~BoundingBox();
+	}
 
 }
 

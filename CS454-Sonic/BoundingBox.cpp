@@ -8,6 +8,11 @@ BoundingBox::BoundingBox(unsigned _x1, unsigned _y1, unsigned _x2, unsigned _y2)
     y2 = _y2;
 }
 
+BoundingBox::BoundingBox()
+{
+    x1 = x2 = y1 = y2 = 0;
+}
+
 bool BoundingBox::Intersects(const BoundingBox& box) const
 {
     return !(

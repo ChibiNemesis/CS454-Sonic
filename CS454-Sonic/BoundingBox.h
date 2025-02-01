@@ -8,14 +8,16 @@ protected:
 	unsigned x1, y1, x2, y2;
 public:
 	BoundingBox(unsigned _x1, unsigned _y1, unsigned _x2, unsigned _y2);
+	BoundingBox();
 
-	virtual bool Intersects(const BoundingBox& box) const;
+	bool Intersects(const BoundingBox& box) const;
 	//virtual bool Intersects(const BoundingCircle& circle);
 	//virtual bool Intersects(const BoundingPolygon& polygon) const;
 
-	virtual bool In(unsigned x, unsigned y) const;
-	virtual bool Intersects(const BoundingArea& area) const;
+	bool In(unsigned x, unsigned y) const;
+	bool Intersects(const BoundingArea& area) const;
 
-	virtual BoundingArea* Clone(void) const;
+	BoundingArea* Clone(void) const;
+	~BoundingBox() {};
 };
 

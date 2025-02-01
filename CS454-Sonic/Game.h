@@ -17,6 +17,7 @@
 #include "Coin.h"
 #include"SDL_mixer.h"
 #include"Flower.h"
+#include"BoundingBox.h"
 
 #define LEFT 0
 #define RIGHT 1
