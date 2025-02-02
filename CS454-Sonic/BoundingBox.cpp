@@ -23,6 +23,26 @@ bool BoundingBox::Intersects(const BoundingBox& box) const
         );
 }
 
+bool BoundingBox::IntersectsAbove(const BoundingBox& box)
+{
+    return !(box.y2 < y1);
+}
+
+bool BoundingBox::IntersectsBelow(const BoundingBox& box)
+{
+    return !(y2 < box.y1);
+}
+
+bool BoundingBox::IntersectsLeft(const BoundingBox& box)
+{
+    return !(box.x2 < x1);
+}
+
+bool BoundingBox::IntersectsRight(const BoundingBox& box)
+{
+    return !(x2 < box.x1);
+}
+
 bool BoundingBox::In(unsigned x, unsigned y) const
 {
     return x1 <= x && x <= x2 && y1 <= y && y <= y2;
@@ -31,6 +51,26 @@ bool BoundingBox::In(unsigned x, unsigned y) const
 bool BoundingBox::Intersects(const BoundingArea& area) const
 {
     return area.Intersects(*this);
+}
+
+int BoundingBox::GetX1()
+{
+    return x1;
+}
+
+int BoundingBox::GetY1()
+{
+    return y1;
+}
+
+int BoundingBox::GetX2()
+{
+    return x2;
+}
+
+int BoundingBox::GetY2()
+{
+    return y2;
 }
 
 BoundingArea* BoundingBox::Clone(void) const

@@ -14,8 +14,18 @@ public:
 	//virtual bool Intersects(const BoundingCircle& circle);
 	//virtual bool Intersects(const BoundingPolygon& polygon) const;
 
+	bool IntersectsAbove(const BoundingBox& box);
+	bool IntersectsBelow(const BoundingBox& box);
+	bool IntersectsLeft(const BoundingBox& box);
+	bool IntersectsRight(const BoundingBox& box);
+
 	bool In(unsigned x, unsigned y) const;
 	bool Intersects(const BoundingArea& area) const;
+
+	int GetX1();
+	int GetY1();
+	int GetX2();
+	int GetY2();
 
 	BoundingArea* Clone(void) const;
 	~BoundingBox() {};
