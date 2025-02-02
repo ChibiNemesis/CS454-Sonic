@@ -36,16 +36,16 @@ Game::Game(std::string name, int width, int height)
 	ViewWindow.y = 150;
 	ViewWindow.w = width;
 	ViewWindow.h = height;
-	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN //SDL_WINDOW_FULLSCREEN_DESKTOP
+	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN //SDL_WINDOW_FULLSCREEN_DESKTOP
 
-	/*Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+	Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
 	if (!rend)
 	{
 		printf("error creating renderer: %s\n", SDL_GetError());
 		SDL_Quit();
 		return;
-	}*/
+	}
 
 	winsurface = SDL_GetWindowSurface(win);
 	//// Fill the window with a white rectangle
@@ -273,6 +273,12 @@ float acceleration = 0.3f;
 float maxSpeed = DEFAULT_MOVEMENT_SPEED;     // The maximum speed the character can reach
 float friction = 0.9f;      // How much the velocity decays when no input is given
 
+float jumpInitialVelocity = 15.0f;
+float gravityAcceleration = 1.0f;  // Gravity added per fixed update
+float maxFallSpeed = 14.0f;        // Maximum falling speed
+bool isOnSolidGround = true;
+bool gravityAttached = false;
+
 void Game::PhysicsMoveCharacter(int dx, int dy) {
 	// Horizontal acceleration
 	if (dx != 0) {
@@ -291,18 +297,20 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 			velX = 0;
 	}
 
-	// Vertical acceleration (TODO: Remove or adapt to handle with Gravity...)
-	if (dy != 0) {
-		velY += dy * acceleration;
-		if (velY > maxSpeed)
-			velY = maxSpeed;
-		else if (velY < -maxSpeed)
-			velY = -maxSpeed;
+	if (dy!=0) {
+		velY = -jumpInitialVelocity;
+	}
+	if (!isOnSolidGround) {
+		velY += gravityAcceleration;
+		if (velY > maxFallSpeed) {
+			//velY = maxFallSpeed;
+			velY = 0;				//For Debugging, Until Gravity and Ground Check are ready.
+			isOnSolidGround = true; //For Debugging, Until Gravity and Ground Check are ready.
+		}
 	}
 	else {
-		velY *= friction;
-		if (fabs(velY) < 0.1f)
-			velY = 0;
+		// When on the ground
+		velY = 0;
 	}
 
 	character->Move(static_cast<int>(velX), static_cast<int>(velY));
@@ -334,12 +342,9 @@ void Game::HandleCharacterMovements()
 	}*/
 
 	if (Inputs[SDL_SCANCODE_A]) {
-		//x = -movement_offset;
-		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = LEFT;
 		if (film_id != "Sonic-Left")
 			character->SetAnimationFilm(LeftMovementFilm);
-		//character->Move(-movement_offset, 0);
 		x = -1;
 	}
 	else if (Inputs[SDL_SCANCODE_D]) {
@@ -352,9 +357,22 @@ void Game::HandleCharacterMovements()
 		x = 1;
 	}
 
-	if (Inputs[SDL_SCANCODE_W]) {
+	if (Inputs[SDL_SCANCODE_W] && isOnSolidGround) {
 		//y = -movement_offset;
 		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		y = -1;
+		isOnSolidGround = false;
+		gravityAttached = false;
+	}
+	else if (Inputs[SDL_SCANCODE_S]) {
+		//y = -movement_offset;
+		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		y = 1;
+	}
+	else {
+		if (gravityAttached && isOnSolidGround==false) {
+			y = 0;
+		}
 	}
 
 	PhysicsMoveCharacter(x, y); // TODO: This should be run by our Physics Loop preferably
