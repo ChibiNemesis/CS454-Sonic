@@ -38,18 +38,18 @@ Game::Game(std::string name, int width, int height)
 	ViewWindow.h = height;
 	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN //SDL_WINDOW_FULLSCREEN_DESKTOP
 
-	Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+	/*Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
 	if (!rend)
 	{
 		printf("error creating renderer: %s\n", SDL_GetError());
 		SDL_Quit();
 		return;
-	}
+	}*/
 
 	winsurface = SDL_GetWindowSurface(win);
-	// Fill the window with a white rectangle
-	SDL_FillRect(winsurface, NULL, SDL_MapRGB(winsurface->format, 255, 255, 255));
+	//// Fill the window with a white rectangle
+	//SDL_FillRect(winsurface, NULL, SDL_MapRGB(winsurface->format, 255, 255, 255));
 
 
 	// Update the window display
@@ -198,13 +198,24 @@ int Game::getfps()
 
 void Game::HandleScrolling()
 {
-	// --- Handle Mouse Dragging (accumulated) ---
-	if (isMouseDragging && (mouseDeltaX != 0 || mouseDeltaY != 0)) {
-		// Apply the accumulated mouse movement to scroll the map.
-		ScrollWithBoundsCheck(&map, &ViewWindow,
-			-mouseDeltaX * scrollMultiplier, -mouseDeltaY * scrollMultiplier);
-		mouseDeltaX = 0;
-		mouseDeltaY = 0;
+	int x = 0, y = 0;
+
+	if (Inputs[SDL_SCANCODE_LEFT]) {
+		x = -movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	}
+	else if (Inputs[SDL_SCANCODE_RIGHT]) {
+		x = movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	}
+
+	if (Inputs[SDL_SCANCODE_UP]) {
+		y = -movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	}
+	else if (Inputs[SDL_SCANCODE_DOWN]) { // For debugging purposes
+		y = movement_offset;
+		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 	}
 
 	if (Inputs[SDL_SCANCODE_HOME] || Inputs[SDL_SCANCODE_KP_1]) {
@@ -215,6 +226,14 @@ void Game::HandleScrolling()
 			((map.getHeight() * 64) - ViewWindow.y) - ViewWindow.h);
 	}
 
+	// Handle Mouse Dragging
+	if (isMouseDragging && (mouseDeltaX != 0 || mouseDeltaY != 0)) {
+		// Apply the accumulated mouse movement to scroll the map.
+		ScrollWithBoundsCheck(&map, &ViewWindow,
+			-mouseDeltaX * scrollMultiplier, -mouseDeltaY * scrollMultiplier);
+		mouseDeltaX = 0;
+		mouseDeltaY = 0;
+	}
 }
 
 void Game::HandleScrollingMultiplier()
@@ -248,47 +267,112 @@ void Game::HandleScrollingMultiplier()
 
 }
 
+// TODO: Move these to .h file when done.
+float velX = 0.0f, velY = 0.0f;
+float acceleration = 0.3f;
+float maxSpeed = DEFAULT_MOVEMENT_SPEED;     // The maximum speed the character can reach
+float friction = 0.9f;      // How much the velocity decays when no input is given
+
+void Game::PhysicsMoveCharacter(int dx, int dy) {
+	// Horizontal acceleration
+	if (dx != 0) {
+		velX += dx * acceleration;
+		// Clamp velX to maxSpeed
+		if (velX > maxSpeed)
+			velX = maxSpeed;
+		else if (velX < -maxSpeed)
+			velX = -maxSpeed;
+	}
+	else {
+		// No horizontal input: apply friction to decelerate
+		velX *= friction;
+		// Optionally zero small velocities
+		if (fabs(velX) < 0.1f)
+			velX = 0;
+	}
+
+	// Vertical acceleration (TODO: Remove or adapt to handle with Gravity...)
+	if (dy != 0) {
+		velY += dy * acceleration;
+		if (velY > maxSpeed)
+			velY = maxSpeed;
+		else if (velY < -maxSpeed)
+			velY = -maxSpeed;
+	}
+	else {
+		velY *= friction;
+		if (fabs(velY) < 0.1f)
+			velY = 0;
+	}
+
+	character->Move(static_cast<int>(velX), static_cast<int>(velY));
+	ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
+}
+
+
 void Game::HandleCharacterMovements()
 {
+	// Keyboard input handling for character movement and scrolling:
 	int x = 0, y = 0;
 
 	std::string film_id = character->GetCurrentFilm()->GetId();
 
-	// Keyboard input handling for character movement and scrolling:
 	character->directMotion = true;
-	if (!Inputs[SDL_SCANCODE_LEFT] && !Inputs[SDL_SCANCODE_RIGHT] &&
-		film_id != "Sonic-Right-Idle" && film_id != "Sonic-Left-Idle") {
-		if (direction == LEFT)
-			character->SetAnimationFilm(LeftIdleFilm);
-		else
-			character->SetAnimationFilm(RightIdleFilm);
-	}
+	/*if (!Inputs[SDL_SCANCODE_A] && !Inputs[SDL_SCANCODE_D]) {
 
-	if (Inputs[SDL_SCANCODE_LEFT]) {
-		x = -movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+		if (film_id != "Sonic-Right-Idle" && film_id != "Sonic-Left-Idle")
+		{
+			if (direction == LEFT)
+			{
+				character->SetAnimationFilm(LeftIdleFilm);
+			}
+			else
+			{
+				character->SetAnimationFilm(RightIdleFilm);
+			}
+		}
+	}*/
+
+	if (Inputs[SDL_SCANCODE_A]) {
+		//x = -movement_offset;
+		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = LEFT;
 		if (film_id != "Sonic-Left")
 			character->SetAnimationFilm(LeftMovementFilm);
-		character->Move(-movement_offset, 0);
+		//character->Move(-movement_offset, 0);
+		x = -1;
 	}
-	else if (Inputs[SDL_SCANCODE_RIGHT]) {
-		x = movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	else if (Inputs[SDL_SCANCODE_D]) {
+		//x = movement_offset;
+		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = RIGHT;
 		if (film_id != "Sonic-Right")
 			character->SetAnimationFilm(RightMovementFilm);
-		character->Move(movement_offset, 0);
+		//character->Move(movement_offset, 0);
+		x = 1;
 	}
 
-	if (Inputs[SDL_SCANCODE_UP]) {
-		y = -movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+	if (Inputs[SDL_SCANCODE_W]) {
+		//y = -movement_offset;
+		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 	}
-	else if (Inputs[SDL_SCANCODE_DOWN]) { // For debugging purposes
-		y = movement_offset;
-		ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
+
+	PhysicsMoveCharacter(x, y); // TODO: This should be run by our Physics Loop preferably
+
+	if (velX != 0 || velY != 0) {
+		FixCameraPos(ViewWindow); // Camera follows when Character Moves.
 	}
+	else {
+		if (direction == LEFT)
+		{
+			character->SetAnimationFilm(LeftIdleFilm);
+		}
+		else
+		{
+			character->SetAnimationFilm(RightIdleFilm);
+		}
+	}
+
 }
 
 bool debugCoinDestroyedTest = false;
@@ -312,10 +396,9 @@ void Game::InputHandler()
 			CoinVec.erase(std::find(CoinVec.begin(), CoinVec.end(), coin_in));
 			debugCoinDestroyedTest = true;
 		}*/
-
-		if (Inputs[SDL_SCANCODE_ESCAPE]) {
-			stoprunning();
-		}
+	}
+	if (Inputs[SDL_SCANCODE_ESCAPE]) {
+		stoprunning();
 	}
 }
 
@@ -412,9 +495,9 @@ void Game::InputHandler()
 				Physics();      // Update physics
 				lastPhysicsUpdateTime = currentTime;
 			}
+			//FixCameraPos(ViewWindow);
 			// Delay to yield CPU
 			SDL_Delay(1);
-			FixCameraPos(ViewWindow);
 		}
 	}
 

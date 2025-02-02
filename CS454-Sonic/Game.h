@@ -24,7 +24,7 @@
 #define COINS 20
 #define FLOWERS 4
 
-#define DEFAULT_MOVEMENT_SPEED 15
+#define DEFAULT_MOVEMENT_SPEED 5
 #define SCROLLDELAY 100
 #define CAMERASCROLLMODIFIER 2
 
@@ -127,5 +127,7 @@ public:
 	void FixCameraPosY(SDL_Rect& ViewWin);
 
 	void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite);
+
+	void PhysicsMoveCharacter(int dx, int dy);
 };
 
