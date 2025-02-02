@@ -59,129 +59,15 @@ private:
 public:
 	GridLayer(std::string path);
 
-
-
-	void FilterGridMotion(const SDL_Rect& r, int* dx, int* dy) {
-		/*assert(
-			abs(*dx) <= GRID_ELEMENT_WIDTH && abs(*dy) <= GRID_ELEMENT_HEIGHT
-		);
-		// try horizontal move
-		if (*dx < 0)
-			FilterGridMotionLeft(r, dx);
-		else
-			if (*dx > 0)
-				FilterGridMotionRight(r, dx);
-		// try vertical move
-		if (*dy < 0)
-			FilterGridMotionUp(r, dy);
-		else
-			if (*dy > 0)
-				FilterGridMotionDown(r, dy);*/
-	}
-	/*
-	void FilterGridMotionLeft(const SDL_Rect& r, int* dx) {
-		auto x1_next = r.x + *dx;
-		if (x1_next < 0)
-			*dx = -r.x;
-		else {
-			auto newCol = DIV_GRID_ELEMENT_WIDTH(x1_next);
-			auto currCol = DIV_GRID_ELEMENT_WIDTH(r.x);
-			if (newCol != currCol) {
-				assert(newCol + 1 == currCol); // we really move left
-				auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
-				auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
-				for (auto row = startRow; row <= endRow; ++row)
-					if (!CanPassGridTile(newCol, row, GRID_RIGHT_SOLID_MASK)) {
-						*dx = MUL_GRID_ELEMENT_WIDTH(currCol) - r.x;
-						break;
-					}
-			}
-		}
-	}
-
-	void FilterGridMotionRight(const SDL_Rect& r, int* dx) {
-		auto x2 = r.x + r.w - 1;
-		auto x2_next = x2 + *dx;
-		if (x2_next >= MAX_PIXEL_WIDTH)
-			*dx = (MAX_PIXEL_WIDTH)-x2; //was (MAX_PIXEL_WIDTH – 1)
-		else {
-			auto newCol = DIV_GRID_ELEMENT_WIDTH(x2_next);
-			auto currCol = DIV_GRID_ELEMENT_WIDTH(x2);
-			if (newCol != currCol) {
-				assert(newCol - 1 == currCol); // we really move right
-				auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
-				auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
-				for (auto row = startRow; row <= endRow; ++row)
-					if (!CanPassGridTile(newCol, row, GRID_LEFT_SOLID_MASK)) {
-						*dx = (MUL_GRID_ELEMENT_WIDTH(newCol)) - x2; //was (newCol) - 1
-						break;
-					}
-			}
-		}
-	}
-
-	void FilterGridMotionUp(const SDL_Rect& r, int* dy) {
-		auto y1_next = r.y + *dy;
-		if (y1_next < 0)
-			*dy = -r.y;
-		else {
-
-			auto newRow = DIV_GRID_ELEMENT_WIDTH(y1_next);
-			auto currRow = DIV_GRID_ELEMENT_WIDTH(r.y);
-			if (newRow != currRow) {
-				assert(newRow + 1 == currRow);
-
-				auto startCol = DIV_GRID_ELEMENT_HEIGHT(r.y);
-				auto endCol = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1); //
-
-				for (auto col = startCol; col <= endCol; ++col) {
-					if (!CanPassGridTile(newRow, col, GRID_TOP_SOLID_MASK)) {
-						*dy = MUL_GRID_ELEMENT_WIDTH(currRow) - r.y;
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	//filter down too
-	void FilterGridMotionDown(const SDL_Rect& r, int* dy) {
-		auto y1_next = r.y + *dy;
-		if (y1_next < 0)
-			*dy = -r.y;
-		else {
-			auto newCol = DIV_GRID_ELEMENT_HEIGHT(y1_next); //WIDTH
-			auto currCol = DIV_GRID_ELEMENT_HEIGHT(r.y);
-			std::cout << "newCol -> " << newCol << "\n";
-			std::cout << "currCol ->" << currCol << "\n";
-			if (newCol != currCol) {
-				assert(newCol == currCol + 1); // we really move down (was: newCol + 1) (was currCol)
-				auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
-				auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
-				for (auto row = startRow; row <= endRow; ++row)
-					if (!CanPassGridTile(newCol, row, GRID_BOTTOM_SOLID_MASK)) {
-						*dy = MUL_GRID_ELEMENT_WIDTH(currCol) - r.y;
-						break;
-					}
-			}
-		}
-	}
-	*/
-
 	bool FilterMotionDown(const BoundingBox& r, int& dy);
 
-	bool FilterMotionUp(const SDL_Rect& r, int* dy);
+	bool FilterMotionUp(const BoundingBox& r, int* dy);
 
-	bool FilterMotionLeft(const SDL_Rect& r, int* dx);
+	bool FilterMotionLeft(const BoundingBox& r, int* dx);
 
-	bool FilterMotionRight(const SDL_Rect& r, int* dx);
+	bool FilterMotionRight(const BoundingBox& r, int* dx);
 
 	bool IsOnSolidGround(const BoundingBox& r);
 
-	bool CanGoUp(const SDL_Rect& r);
+	bool CanGoUp(const  BoundingBox& r);
 };
-
-//bool IsTileIndexAssumedEmpty(Index index) {
-//	return true;
-//}
-

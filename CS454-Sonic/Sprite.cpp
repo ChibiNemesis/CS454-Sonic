@@ -69,7 +69,7 @@ const Sprite::Mover MakeSpriteGridLayerMover(GridLayer* gridLayer, Sprite* sprit
 			r.w == sprite->GetBox().w &&
 			r.h == sprite->GetBox().h
 		);
-		gridLayer->FilterGridMotion(r, dx, dy);
+		//gridLayer->FilterGridMotion(r, dx, dy);
 		if (*dx || *dy)
 			sprite->SetHasDirectMotion(true).Move(*dx, *dy).SetHasDirectMotion(false);
 		};
