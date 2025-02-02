@@ -83,13 +83,22 @@ Game::Game(std::string name, int width, int height)
 	//Surface paths
 	std::string LeftMovementPath = "tilesets\\SonicWalkingLeft.png";
 	std::string RightMovementPath = "tilesets\\SonicWalkingRight.png";
+	std::string LeftRunningPath = "tilesets\\SonicRunLeft.png";
+	std::string RightRunningPath = "tilesets\\SonicRunRight.png";
+	std::string LeftSkidPath = "tilesets\\SonicSkidLeft.png";
+	std::string RightSkidPath = "tilesets\\SonicSkidRight.png";
 	std::string LeftJumpPath = "tilesets\\SonicJumpLeft.png";
 	std::string RightJumpPath = "tilesets\\SonicJumpRight.png";
 	std::string LeftIdlePath = "tilesets\\SonicIdleLeft.png";
 	std::string RightIdlePath = "tilesets\\SonicIdleRight.png";
 	std::string WinPath = "tilesets\\SonicWin.png";
+
 	SDL_Surface* LeftMovementSurface = IMG_Load(LeftMovementPath.c_str());
 	SDL_Surface* RightMovementSurface = IMG_Load(RightMovementPath.c_str());
+	SDL_Surface* LeftRunningSurface = IMG_Load(LeftRunningPath.c_str());
+	SDL_Surface* RightRunningSurface = IMG_Load(RightRunningPath.c_str());
+	SDL_Surface* LeftSkidSurface = IMG_Load(LeftSkidPath.c_str());
+	SDL_Surface* RightSkidSurface = IMG_Load(RightSkidPath.c_str());
 	SDL_Surface* LeftJumpSurface = IMG_Load(LeftJumpPath.c_str());
 	SDL_Surface* RightJumpSurface = IMG_Load(RightJumpPath.c_str());
 	SDL_Surface* LeftIdleSurface = IMG_Load(LeftIdlePath.c_str());
@@ -99,6 +108,10 @@ Game::Game(std::string name, int width, int height)
 	//Rect paths
 	std::string LeftMovementRectPath = "Animation\\Sonic\\SonicWalkLeft.txt";
 	std::string RightMovementRectPath = "Animation\\Sonic\\SonicWalkRight.txt";
+	std::string LeftRunningRectPath = "Animation\\Sonic\\SonicRunLeft.txt";
+	std::string RightRunningRectPath = "Animation\\Sonic\\SonicRunRight.txt";
+	std::string LeftSkidRectPath = "Animation\\Sonic\\SonicSkidLeft.txt";
+	std::string RightSkidRectPath = "Animation\\Sonic\\SonicSkidRight.txt";
 	std::string LeftJumpRectPath = "Animation\\Sonic\\SonicJumpLeft.txt";
 	std::string RightJumpRectPath = "Animation\\Sonic\\SonicJumpRight.txt";
 	std::string LeftIdleRectPath = "Animation\\Sonic\\SonicIdleLeft.txt";
@@ -108,6 +121,10 @@ Game::Game(std::string name, int width, int height)
 	//Now, initialize all necessary films
 	LeftMovementFilm = new AnimationFilm(LeftMovementSurface, LeftMovementRectPath, "Sonic-Left");
 	RightMovementFilm = new AnimationFilm(RightMovementSurface, RightMovementRectPath, "Sonic-Right");
+	LeftRunningFilm = new AnimationFilm(LeftRunningSurface, LeftRunningRectPath, "Sonic-Left-Run");
+	RightRunningFilm = new AnimationFilm(RightRunningSurface, RightRunningRectPath, "Sonic-Right-Run");
+	LeftSkidFilm = new AnimationFilm(LeftSkidSurface, LeftSkidRectPath, "Sonic-Left-Skid");
+	RightSkidFilm = new AnimationFilm(RightSkidSurface, RightSkidRectPath, "Sonic-Right-Skid");
 	LeftIdleFilm = new AnimationFilm(LeftIdleSurface, LeftIdleRectPath, "Sonic-Left-Idle");
 	RightIdleFilm = new AnimationFilm(RightIdleSurface, RightIdleRectPath, "Sonic-Right-Idle");
 	LeftJumpFilm = new AnimationFilm(LeftJumpSurface, LeftJumpRectPath, "Sonic-Left-Jump");
@@ -269,9 +286,9 @@ void Game::HandleScrollingMultiplier()
 
 // TODO: Move these to .h file when done.
 float velX = 0.0f, velY = 0.0f;
-float acceleration = 0.3f;
+float acceleration = 0.15f;
 float maxSpeed = DEFAULT_MOVEMENT_SPEED;     // The maximum speed the character can reach
-float friction = 0.9f;      // How much the velocity decays when no input is given
+float friction = 0.98f;      // How much the velocity decays when no input is given
 
 float jumpInitialVelocity = 15.0f;
 float gravityAcceleration = 1.0f;  // Gravity added per fixed update
@@ -292,7 +309,7 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 	else {
 		// No horizontal input: apply friction to decelerate
 		velX *= friction;
-		// Optionally zero small velocities
+		// zero small velocities
 		if (fabs(velX) < 0.1f)
 			velX = 0;
 	}
@@ -315,6 +332,7 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 
 	character->Move(static_cast<int>(velX), static_cast<int>(velY));
 	ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
+	
 }
 
 
@@ -323,7 +341,7 @@ void Game::HandleCharacterMovements()
 	// Keyboard input handling for character movement and scrolling:
 	int x = 0, y = 0;
 
-	std::string film_id = character->GetCurrentFilm()->GetId();
+	//std::string film_id = character->GetCurrentFilm()->GetId();
 
 	character->directMotion = true;
 	/*if (!Inputs[SDL_SCANCODE_A] && !Inputs[SDL_SCANCODE_D]) {
@@ -343,16 +361,16 @@ void Game::HandleCharacterMovements()
 
 	if (Inputs[SDL_SCANCODE_A]) {
 		direction = LEFT;
-		if (film_id != "Sonic-Left")
-			character->SetAnimationFilm(LeftMovementFilm);
+		/*if (film_id != "Sonic-Left")
+			character->SetAnimationFilm(LeftMovementFilm);*/
 		x = -1;
 	}
 	else if (Inputs[SDL_SCANCODE_D]) {
 		//x = movement_offset;
 		//ScrollWithBoundsCheck(&map, &ViewWindow, x, y);
 		direction = RIGHT;
-		if (film_id != "Sonic-Right")
-			character->SetAnimationFilm(RightMovementFilm);
+		/*if (film_id != "Sonic-Right")
+			character->SetAnimationFilm(RightMovementFilm);*/
 		//character->Move(movement_offset, 0);
 		x = 1;
 	}
@@ -376,6 +394,46 @@ void Game::HandleCharacterMovements()
 	}
 
 	PhysicsMoveCharacter(x, y); // TODO: This should be run by our Physics Loop preferably
+
+	//Sonic Movement Based Animations Start
+	std::string film_id = character->GetCurrentFilm()->GetId();
+	if (velX < 0) {
+		if (velX <= -maxSpeed) {
+			if (film_id != "Sonic-Left-Run")
+				character->SetAnimationFilm(LeftRunningFilm);
+		}
+		else {
+			if (direction == LEFT && film_id != "Sonic-Left")
+				character->SetAnimationFilm(LeftMovementFilm);
+			else if (direction == RIGHT && film_id != "Sonic-Right") {
+				if (velX < DEFAULT_MOVEMENT_SPEED + 2) {
+					character->SetAnimationFilm(RightSkidFilm);
+				}
+				else {
+					character->SetAnimationFilm(RightMovementFilm);
+				}
+			}
+		}
+	}
+	else if (velX > 0) {
+		if (velX >= maxSpeed) {
+			if (film_id != "Sonic-Right-Run")
+				character->SetAnimationFilm(RightRunningFilm);
+		}
+		else {
+			if (direction == RIGHT && film_id != "Sonic-Right")
+				character->SetAnimationFilm(RightMovementFilm);
+			else if (direction == LEFT && film_id != "Sonic-Left") {
+				if (velX > (DEFAULT_MOVEMENT_SPEED -2)) {
+					character->SetAnimationFilm(LeftSkidFilm);
+				}
+				else {
+					character->SetAnimationFilm(LeftMovementFilm);
+				}
+			}
+		}
+	}
+	//Sonic Movement Based Animations End
 
 	if (velX != 0 || velY != 0) {
 		FixCameraPos(ViewWindow); // Camera follows when Character Moves.

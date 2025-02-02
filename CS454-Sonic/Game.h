@@ -24,7 +24,7 @@
 #define COINS 20
 #define FLOWERS 4
 
-#define DEFAULT_MOVEMENT_SPEED 5
+#define DEFAULT_MOVEMENT_SPEED 10
 #define SCROLLDELAY 100
 #define CAMERASCROLLMODIFIER 2
 
@@ -76,6 +76,10 @@ private:
 	//One AnimationFilm for every possible diretion
 	AnimationFilm* LeftMovementFilm = NULL;
 	AnimationFilm* RightMovementFilm = NULL;
+	AnimationFilm* LeftRunningFilm = NULL;
+	AnimationFilm* RightRunningFilm = NULL;
+	AnimationFilm* LeftSkidFilm = NULL;
+	AnimationFilm* RightSkidFilm = NULL;
 	AnimationFilm* LeftIdleFilm = NULL;
 	AnimationFilm* RightIdleFilm = NULL;
 	AnimationFilm* LeftJumpFilm = NULL;
