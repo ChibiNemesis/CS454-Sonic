@@ -39,6 +39,26 @@ void Sprite::Display(SDL_Surface& dest, const SDL_Rect& dpyArea) const
 	SDL_BlitSurface(currFilm->GetBitmap(), &currFilm->GetFrameBox(frameNo), &dest, &Dest_Rect);
 }
 
+void Sprite::SetStaticHeight(int _h)
+{
+	StaticHeight = _h;
+}
+
+void Sprite::SetStaticWidth(int _w)
+{
+	StaticWidth = _w;
+}
+
+int Sprite::getStaticHeight()
+{
+	return StaticHeight;
+}
+
+int Sprite::getStaticWidth()
+{
+	return StaticWidth;
+}
+
 //create gridlayer
 
 const Sprite::Mover MakeSpriteGridLayerMover(GridLayer* gridLayer, Sprite* sprite) {

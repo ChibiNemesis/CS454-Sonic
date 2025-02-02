@@ -8,13 +8,14 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include"BoundingBox.h"
 
 #define MAX_WIDTH 2000
 #define MAX_HEIGHT 2000
 
 
-#define GRID_ELEMENT_WIDTH 16 //could this be 4
-#define GRID_ELEMENT_HEIGHT 16
+#define GRID_ELEMENT_WIDTH 8 
+#define GRID_ELEMENT_HEIGHT 8
 #if TILE_WIDTH % GRID_ELEMENT_WIDTH != 0
 #error "TILE_WIDTH % GRID_ELEMENT_WIDTH must be zero!"
 #endif
@@ -37,10 +38,10 @@
 
 #define MAX_PIXEL_WIDTH MUL_TILE_WIDTH(MAX_WIDTH)
 #define MAX_PIXEL_HEIGHT MUL_TILE_HEIGHT(MAX_HEIGHT)
-#define DIV_GRID_ELEMENT_WIDTH(i) ((i)>>2)
-#define DIV_GRID_ELEMENT_HEIGHT(i) ((i)>>2)
-#define MUL_GRID_ELEMENT_WIDTH(i) ((i)<<2)
-#define MUL_GRID_ELEMENT_HEIGHT(i) ((i)<<2)
+#define DIV_GRID_ELEMENT_WIDTH(i) ((i)>>3) //2
+#define DIV_GRID_ELEMENT_HEIGHT(i) ((i)>>3)
+#define MUL_GRID_ELEMENT_WIDTH(i) ((i)<<3)
+#define MUL_GRID_ELEMENT_HEIGHT(i) ((i)<<3)
 
 #define GRID_EMPTY_TILE GRID_THIN_AIR_MASK
 #define GRID_SOLID_TILE \
@@ -54,48 +55,14 @@ private:
 	std::set<int> solidtiles;
 	GridIndex map[MAX][MAX];
 	Dim totalRows, totalColumns;
+	std::vector<BoundingBox> Colliders;
 public:
 	GridLayer(std::string path);
 
-	void SetGridMap(Tilemap* m);
 
-	void SetGridTile(Dim col, Dim row, GridIndex index) {
-		map[row][col] = index;
-	}
-
-	GridIndex GetGridTile(Dim col, Dim row)
-	{
-		return map[row][col];
-	}
-
-	void SetRowsCols(Dim _r, Dim _c) {
-		totalRows = _r;
-		totalColumns = _c;
-	}
-
-	void SetSolidGridTile(Dim col, Dim row)
-	{
-		SetGridTile(col, row, GRID_SOLID_TILE);
-	}
-	void SetEmptyGridTile(Dim col, Dim row)
-	{
-		SetGridTile(col, row, GRID_EMPTY_TILE);
-	}
-	void SetGridTileFlags(Dim col, Dim row, GridIndex flags)
-	{
-		SetGridTile(col, row, flags);
-	}
-	void SetGridTileTopSolidOnly(Dim col, Dim row)
-	{
-		SetGridTileFlags(row, col, GRID_TOP_SOLID_MASK);
-	}
-	bool CanPassGridTile(Dim col, Dim row, GridIndex flags) // i.e. checks if flags set
-	{
-		return GetGridTile(row, col) && flags != 0; //note, this had one &
-	}
 
 	void FilterGridMotion(const SDL_Rect& r, int* dx, int* dy) {
-		assert(
+		/*assert(
 			abs(*dx) <= GRID_ELEMENT_WIDTH && abs(*dy) <= GRID_ELEMENT_HEIGHT
 		);
 		// try horizontal move
@@ -109,9 +76,9 @@ public:
 			FilterGridMotionUp(r, dy);
 		else
 			if (*dy > 0)
-				FilterGridMotionDown(r, dy);
+				FilterGridMotionDown(r, dy);*/
 	}
-
+	/*
 	void FilterGridMotionLeft(const SDL_Rect& r, int* dx) {
 		auto x1_next = r.x + *dx;
 		if (x1_next < 0)
@@ -183,27 +150,35 @@ public:
 		if (y1_next < 0)
 			*dy = -r.y;
 		else {
-			auto newCol = DIV_GRID_ELEMENT_WIDTH(y1_next);
-			auto currCol = DIV_GRID_ELEMENT_WIDTH(r.y);
+			auto newCol = DIV_GRID_ELEMENT_HEIGHT(y1_next); //WIDTH
+			auto currCol = DIV_GRID_ELEMENT_HEIGHT(r.y);
+			std::cout << "newCol -> " << newCol << "\n";
+			std::cout << "currCol ->" << currCol << "\n";
 			if (newCol != currCol) {
-				assert(newCol + 1 == currCol); // we really move left
+				assert(newCol == currCol + 1); // we really move down (was: newCol + 1) (was currCol)
 				auto startRow = DIV_GRID_ELEMENT_HEIGHT(r.y);
 				auto endRow = DIV_GRID_ELEMENT_HEIGHT(r.y + r.h - 1);
 				for (auto row = startRow; row <= endRow; ++row)
-					if (!CanPassGridTile(newCol, row, GRID_RIGHT_SOLID_MASK)) {
+					if (!CanPassGridTile(newCol, row, GRID_BOTTOM_SOLID_MASK)) {
 						*dy = MUL_GRID_ELEMENT_WIDTH(currCol) - r.y;
 						break;
 					}
 			}
 		}
 	}
+	*/
 
-	bool IsOnSolidGround(const SDL_Rect& r) {
-		int dy = 1; // down 1 pixel
-		FilterGridMotionDown(r, &dy);
-		return dy == 0; // if true IS attached to solid ground
-	}
+	bool FilterMotionDown(const BoundingBox& r, int& dy);
 
+	bool FilterMotionUp(const SDL_Rect& r, int* dy);
+
+	bool FilterMotionLeft(const SDL_Rect& r, int* dx);
+
+	bool FilterMotionRight(const SDL_Rect& r, int* dx);
+
+	bool IsOnSolidGround(const BoundingBox& r);
+
+	bool CanGoUp(const SDL_Rect& r);
 };
 
 //bool IsTileIndexAssumedEmpty(Index index) {

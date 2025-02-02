@@ -69,9 +69,7 @@ Game::Game(std::string name, int width, int height)
 
 
 	//set gridmap too
-	grid = new GridLayer("terrain\\SolidTiles.txt"); //we need to create that first
-	grid->SetRowsCols(map.getWidth(), map.getHeight());
-	grid->SetGridMap(&map);
+	grid = new GridLayer("terrain\\SolidTiles.txt");
 
 
 	//use this type of animation to update the elapsed time
@@ -132,6 +130,8 @@ Game::Game(std::string name, int width, int height)
 	WinFilm = new AnimationFilm(WinSurface, WinRectPath, "Sonic-win");
 
 	character = new Character(158, 276, RightIdleFilm, "Sonic");
+	character->SetStaticHeight(40);
+	character->SetStaticWidth(32);
 
 	//Rings Setup
 	for (auto r = 0; r < COINS; r++) {
@@ -596,7 +596,18 @@ void Game::InputHandler()
 			CharacterBox->~BoundingBox();
 			RingBox->~BoundingBox();
 		}
+		SDL_Rect sr = character->GetBox();
 
+		SDL_Rect sr2{ sr.x, sr.y, character->getStaticWidth(), character->getStaticHeight() };
+
+		BoundingBox* CharacterBox = new BoundingBox(sr.x, sr.y, sr.x + sr2.w, sr.y + sr2.h);
+		BoundingBox* Temp = new BoundingBox(0, 316, 1173, 408);
+		if (CharacterBox->Intersects(*Temp)) {
+			std::cout << "Intersects\n";
+		}
+		grid->IsOnSolidGround(*CharacterBox);
+		CharacterBox->~BoundingBox();
+		Temp->~BoundingBox();
 	}
 
 	void Game::Animate()
@@ -619,10 +630,11 @@ void Game::InputHandler()
 
 	void Game::PrepareSpriteGravityHandler(GridLayer * gridLayer, Sprite * sprite)
 	{
+		/*
 		character->GetGravityHandler().SetOnSolidGround(
 			[gridLayer](const SDL_Rect& r)
 			{ return gridLayer->IsOnSolidGround(r); }
-		);
+		);*/
 	}
 
 	void Game::FixCameraPos(SDL_Rect & ViewWin)

@@ -23,6 +23,9 @@ protected:
 	unsigned zorder = 0;
 	std::string typeId, stateId;
 	Mover mover;
+
+	int StaticWidth;
+	int StaticHeight;
 	//MotionQuantizer quantizer;
 public:
 	bool directMotion = false;
@@ -99,6 +102,11 @@ public:
 		currFilm = _film;
 		frameNo = currFilm->GetTotalFrames(); SetFrame(0);
 	}
+
+	void SetStaticHeight(int _h);
+	void SetStaticWidth(int _w);
+	int getStaticHeight();
+	int getStaticWidth();
 };
 
 //grid layer
