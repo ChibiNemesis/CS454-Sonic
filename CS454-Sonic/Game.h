@@ -74,8 +74,8 @@ private:
 	Flower* Flowers[FLOWERS];
 
 	//One AnimationFilm for every possible diretion
-	AnimationFilm* LeftMovementFilm = NULL;
-	AnimationFilm* RightMovementFilm = NULL;
+	AnimationFilm* LeftWalkFilm = NULL;
+	AnimationFilm* RightWalkFilm = NULL;
 	AnimationFilm* LeftRunningFilm = NULL;
 	AnimationFilm* RightRunningFilm = NULL;
 	AnimationFilm* LeftSkidFilm = NULL;
