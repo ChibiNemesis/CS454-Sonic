@@ -89,6 +89,10 @@ Game::Game(std::string name, int width, int height)
 	std::string RightJumpPath = "tilesets\\SonicJumpRight.png";
 	std::string LeftIdlePath = "tilesets\\SonicIdleLeft.png";
 	std::string RightIdlePath = "tilesets\\SonicIdleRight.png";
+	std::string LeftRollJump = "tilesets\\SonicRollJumpLeft.png";
+	std::string RightRollJump = "tilesets\\SonicRollJumpRight.png";
+	std::string LeftCurlUp = "tilesets\\SonicCurlingUpLeft.png";
+	std::string RightCurlUp = "tilesets\\SonicCurlingUpRight.png";
 	std::string WinPath = "tilesets\\SonicWin.png";
 
 	SDL_Surface* LeftWalkSurface = IMG_Load(LeftWalkPath.c_str());
@@ -101,6 +105,10 @@ Game::Game(std::string name, int width, int height)
 	SDL_Surface* RightJumpSurface = IMG_Load(RightJumpPath.c_str());
 	SDL_Surface* LeftIdleSurface = IMG_Load(LeftIdlePath.c_str());
 	SDL_Surface* RightIdleSurface = IMG_Load(RightIdlePath.c_str());
+	SDL_Surface* LeftRollJumpSurface = IMG_Load(LeftRollJump.c_str());
+	SDL_Surface* RightRollJumpSurface = IMG_Load(RightRollJump.c_str());
+	SDL_Surface* LeftCurlUpSurface = IMG_Load(LeftCurlUp.c_str());
+	SDL_Surface* RightCurlUpSurface = IMG_Load(RightCurlUp.c_str());
 	SDL_Surface* WinSurface = IMG_Load(WinPath.c_str());
 
 	//Rect paths
@@ -114,6 +122,10 @@ Game::Game(std::string name, int width, int height)
 	std::string RightJumpRectPath = "Animation\\Sonic\\SonicJumpRight.txt";
 	std::string LeftIdleRectPath = "Animation\\Sonic\\SonicIdleLeft.txt";
 	std::string RightIdleRectPath = "Animation\\Sonic\\SonicIdleRight.txt";
+	std::string LeftRollJumpRectPath = "Animation\\Sonic\\SonicRollJumpLeft.txt";
+	std::string RightRollJumpRectPath = "Animation\\Sonic\\SonicRollJumpRight.txt";
+	std::string LeftCurlUpRectPath = "Animation\\Sonic\\SonicCurlingUpLeft.txt";
+	std::string RightCurlUpRectPath = "Animation\\Sonic\\SonicCurlingUpRight.txt";
 	std::string WinRectPath = "Animation\\Sonic\\SonicWin.txt";
 
 	//Now, initialize all necessary films
@@ -127,6 +139,10 @@ Game::Game(std::string name, int width, int height)
 	RightIdleFilm = new AnimationFilm(RightIdleSurface, RightIdleRectPath, "Sonic-Right-Idle");
 	LeftJumpFilm = new AnimationFilm(LeftJumpSurface, LeftJumpRectPath, "Sonic-Left-Jump");
 	RightJumpFilm = new AnimationFilm(RightJumpSurface, RightJumpRectPath, "Sonic-Right-Jump");
+	LeftRollJumpFilm = new AnimationFilm(LeftRollJumpSurface, LeftRollJumpRectPath, "Sonic-Left-RollJump");
+	RightRollJumpFilm = new AnimationFilm(RightRollJumpSurface, RightRollJumpRectPath, "Sonic-Right-RollJump");
+	LeftCurlUpFilm = new AnimationFilm(LeftCurlUpSurface, LeftCurlUpRectPath, "Sonic-Left-CurlUp");
+	RightCurlUpFilm = new AnimationFilm(RightCurlUpSurface, RightCurlUpRectPath, "Sonic-Right-CurlUp");
 	WinFilm = new AnimationFilm(WinSurface, WinRectPath, "Sonic-win");
 
 	character = new Character(158, 276, RightIdleFilm, "Sonic");
@@ -290,8 +306,8 @@ float acceleration = 0.15f;
 float maxSpeed = DEFAULT_MOVEMENT_SPEED;     // The maximum speed the character can reach
 float friction = 0.98f;      // How much the velocity decays when no input is given
 
-float jumpInitialVelocity = 15.0f;
-float gravityAcceleration = 1.0f;  // Gravity added per fixed update
+float jumpInitialVelocity = DEFAULT_MOVEMENT_SPEED;
+float gravityAcceleration = 0.3f;  // Gravity added per fixed update
 bool isOnSolidGround = true;
 bool gravityAttached = false;
 
@@ -331,6 +347,9 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 	ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
 }
 
+bool isRolling = false;
+bool ignoreDownButton = false;
+bool canJump = true;
 
 void Game::HandleCharacterMovements()
 {
@@ -340,20 +359,6 @@ void Game::HandleCharacterMovements()
 	//std::string film_id = character->GetCurrentFilm()->GetId();
 
 	character->directMotion = true;
-	/*if (!Inputs[SDL_SCANCODE_A] && !Inputs[SDL_SCANCODE_D]) {
-
-		if (film_id != "Sonic-Right-Idle" && film_id != "Sonic-Left-Idle")
-		{
-			if (direction == LEFT)
-			{
-				character->SetAnimationFilm(LeftIdleFilm);
-			}
-			else
-			{
-				character->SetAnimationFilm(RightIdleFilm);
-			}
-		}
-	}*/
 
 	if (Inputs[SDL_SCANCODE_A]) {
 		x = -1;
@@ -368,12 +373,16 @@ void Game::HandleCharacterMovements()
 			
 		direction = RIGHT;
 	}
+	else {
+		ignoreDownButton = false; //Stop Ignoring when MoveLeft Or Right aren't pressed.
+	}
 
 	if (isOnSolidGround) {
-		if (Inputs[SDL_SCANCODE_W]) {
+		if (Inputs[SDL_SCANCODE_W] && canJump) {
 			y = -1;
-			//isOnSolidGround = false;
-			//gravityAttached = false;
+			canJump = false;
+		}else if (Inputs[SDL_SCANCODE_S] && !ignoreDownButton) {
+				//downButtonPressed = true;
 		}
 	}
 
@@ -381,67 +390,89 @@ void Game::HandleCharacterMovements()
 
 	//Sonic Horizontal Movement Based Animations Start
 	std::string film_id = character->GetCurrentFilm()->GetId();
-	if (velX < -0.6) // ---Almost Zero Velocity--- Value: 0.6 == AccelerationRate(0.15) x 4
-	{
-		if (velX == -maxSpeed)
+
+	if (isOnSolidGround) {
+		if (velX < -0.6) // ---Almost Zero Velocity--- Value: 0.6 == AccelerationRate(0.15) x 4
 		{
-			if (film_id != "Sonic-Left-Run")
+			if (velX == -maxSpeed)
 			{
-				character->SetAnimationFilm(LeftRunningFilm);
+				if (film_id != "Sonic-Left-Run")
+				{
+					character->SetAnimationFilm(LeftRunningFilm);
+				}
+			}
+			else {
+				if (x < 0 && film_id != "Sonic-Left-Walk")
+				{
+					character->SetAnimationFilm(LeftWalkFilm);
+				}
+				else if (x >0 && film_id != "Sonic-Left-Skid")
+				{
+					character->SetAnimationFilm(LeftSkidFilm);
+				}
+			}
+		}
+		else if (velX > 0.6) //Almost 0
+		{
+			if (velX == maxSpeed)
+			{
+				if (film_id != "Sonic-Right-Run")
+				{
+					character->SetAnimationFilm(RightRunningFilm);
+				}
+			}
+			else {
+				if (x > 0 && film_id != "Sonic-Right-Walk")
+					character->SetAnimationFilm(RightWalkFilm);
+				else if (x < 0 && film_id != "Sonic-Right-Skid") {
+					character->SetAnimationFilm(RightSkidFilm);
+				}
 			}
 		}
 		else {
-			if (x < 0 && film_id != "Sonic-Left-Walk")
-			{
-				character->SetAnimationFilm(LeftWalkFilm);
-			}
-			else if (x >0 && film_id != "Sonic-Left-Skid")
-			{
-				character->SetAnimationFilm(LeftSkidFilm);
-			}
-		}
-	}
-	else if (velX > 0.6) //Almost 0
-	{
-		if (velX == maxSpeed)
-		{
-			if (film_id != "Sonic-Right-Run")
-			{
-				character->SetAnimationFilm(RightRunningFilm);
-			}
-		}
-		else {
-			if (x > 0 && film_id != "Sonic-Right-Walk")
-				character->SetAnimationFilm(RightWalkFilm);
-			else if (x < 0 && film_id != "Sonic-Right-Skid") {
-				character->SetAnimationFilm(RightSkidFilm);
+			if (film_id == "Sonic-Right-Skid" || film_id == "Sonic-Left-Skid") { //For Edge Case to mimic the real game's movement of pressing stop but still keep on slipping. 
+				if (direction == LEFT)
+				{
+					direction = RIGHT;
+					character->SetAnimationFilm(RightIdleFilm);
+				}
+				else
+				{
+					direction = LEFT;
+					character->SetAnimationFilm(LeftIdleFilm);
+				}
+			} 
+			else {		//This runs most times.
+				if (direction == LEFT)
+				{
+					character->SetAnimationFilm(LeftIdleFilm);
+				}
+				else
+				{
+					character->SetAnimationFilm(RightIdleFilm);
+				}
 			}
 		}
 	}
 	else {
-		if (film_id == "Sonic-Right-Skid" || film_id == "Sonic-Left-Skid") { //For Edge Case to mimic the real game's movement of pressing stop but still keep on slipping. 
-			if (direction == LEFT)
-			{
-				direction = RIGHT;
-				character->SetAnimationFilm(RightIdleFilm);
+		if (canJump == false) {
+			if (direction == LEFT) {
+				if (film_id != "Sonic-Left-RollJump") {
+					character->SetAnimationFilm(LeftRollJumpFilm);
+				}
 			}
-			else
-			{
-				direction = LEFT;
-				character->SetAnimationFilm(LeftIdleFilm);
+			else if (direction == RIGHT) {
+				if (film_id != "Sonic-Right-RollJump") {
+					character->SetAnimationFilm(RightRollJumpFilm);
+				}
 			}
-		} 
-		else {		//This runs most times.
-			if (direction == LEFT)
-			{
-				character->SetAnimationFilm(LeftIdleFilm);
-			}
-			else
-			{
-				character->SetAnimationFilm(RightIdleFilm);
-			}
+			isRolling = true;
+		}
+		else {
+			isRolling = false;
 		}
 	}
+
 	//Sonic Horizontal Movement Based Animations End
 
 	if (velX != 0 || velY != 0) {
@@ -510,6 +541,13 @@ void Game::InputHandler()
 					break;
 				case SDL_SCANCODE_KP_MINUS:
 					scrollMultiplierapplied = true;
+					break;
+				case SDL_SCANCODE_W:
+					Inputs[SDL_SCANCODE_W] = false;
+					canJump = true;
+					break;
+				case SDL_SCANCODE_S:
+					//downButtonPressed = true;
 					break;
 				default:  // For continuous button reads.
 					Inputs[event.key.keysym.scancode] = false;
