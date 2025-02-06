@@ -365,13 +365,22 @@ void Game::HandleCharacterMovements()
 		x = -1;
 		if (velX > 0.6) //Addition to Stop Faster like Original Game!
 			x -= velX;
+
+		if (isRolling && isOnSolidGround && velX<0) { // To ignore the input if in rolling mode but still be able to stop the rolling if oposite direction input of current momentum is received.
+			x = 0;
+		}
+
 		direction = LEFT;
 	}
 	else if (Inputs[SDL_SCANCODE_D]) {
 		x = 1;
 		if (velX < -0.6) //Addition to Stop Faster like Original Game!
 			x -= velX;
-			
+
+		if (isRolling && isOnSolidGround && velX> 0) {
+			x = 0;
+		}
+
 		direction = RIGHT;
 	}
 	else {
@@ -395,42 +404,87 @@ void Game::HandleCharacterMovements()
 	if (isOnSolidGround) {
 		if (velX < -0.6) // ---Almost Zero Velocity--- Value: 0.6 == AccelerationRate(0.15) x 4
 		{
-			if (velX == -maxSpeed)
-			{
-				if (film_id != "Sonic-Left-Run")
-				{
-					character->SetAnimationFilm(LeftRunningFilm);
+			if (downButtonPressed) {
+				if (direction == LEFT) {
+					if (film_id != "Sonic-Left-RollJump") {
+						character->SetAnimationFilm(LeftRollJumpFilm);
+					}
+				}
+				else if (direction == RIGHT) {
+					if (film_id != "Sonic-Right-RollJump") {
+						character->SetAnimationFilm(RightRollJumpFilm);
+					}
+				}
+				if (isRolling == false) {
+					isRolling = true;
+					character->Move(0, 20);
+					character->SetStaticHeight(20);
 				}
 			}
 			else {
-				if (direction == LEFT && film_id != "Sonic-Left-Walk")
+				if (velX == -maxSpeed)
 				{
-					character->SetAnimationFilm(LeftWalkFilm);
+					if (film_id != "Sonic-Left-Run")
+					{
+						character->SetAnimationFilm(LeftRunningFilm);
+					}
 				}
-				else if (x >0 && film_id != "Sonic-Left-Skid")
-				{
-					character->SetAnimationFilm(LeftSkidFilm);
+				else {
+					if (direction == LEFT && film_id != "Sonic-Left-Walk")
+					{
+						character->SetAnimationFilm(LeftWalkFilm);
+					}
+					else if (x >0 && film_id != "Sonic-Left-Skid")
+					{
+						character->SetAnimationFilm(LeftSkidFilm);
+					}
 				}
 			}
 		}
 		else if (velX > 0.6) //Almost 0
 		{
-			if (velX == maxSpeed)
-			{
-				if (film_id != "Sonic-Right-Run")
-				{
-					character->SetAnimationFilm(RightRunningFilm);
+			if (downButtonPressed) {
+				if (direction == LEFT) {
+					if (film_id != "Sonic-Left-RollJump") {
+						character->SetAnimationFilm(LeftRollJumpFilm);
+					}
 				}
+				else if (direction == RIGHT) {
+					if (film_id != "Sonic-Right-RollJump") {
+						character->SetAnimationFilm(RightRollJumpFilm);
+					}
+				}
+				if (isRolling == false) {
+					isRolling = true;
+					character->Move(0, 20);
+					character->SetStaticHeight(20);
+				}
+				//downButtonPressed = false;
 			}
 			else {
-				if (direction==RIGHT && film_id != "Sonic-Right-Walk")
-					character->SetAnimationFilm(RightWalkFilm);
-				else if (x < 0 && film_id != "Sonic-Right-Skid") {
-					character->SetAnimationFilm(RightSkidFilm);
+				if (velX == maxSpeed)
+				{
+					if (film_id != "Sonic-Right-Run")
+					{
+						character->SetAnimationFilm(RightRunningFilm);
+					}
+				}
+				else {
+					if (direction==RIGHT && film_id != "Sonic-Right-Walk")
+						character->SetAnimationFilm(RightWalkFilm);
+					else if (x < 0 && film_id != "Sonic-Right-Skid") {
+						character->SetAnimationFilm(RightSkidFilm);
+					}
 				}
 			}
 		}
 		else {
+			if ( x == 0 && isRolling) {
+				isRolling = false;
+				character->Move(0, -20);
+				character->SetStaticHeight(40);
+				downButtonPressed = false;
+			}
 			if (film_id == "Sonic-Right-Skid" || film_id == "Sonic-Left-Skid") { //For Edge Case to mimic the real game's movement of pressing stop but still keep on slipping. 
 				if (direction == LEFT)
 				{
@@ -443,7 +497,7 @@ void Game::HandleCharacterMovements()
 					character->SetAnimationFilm(LeftIdleFilm);
 				}
 			} 
-			else {		//This runs most times.
+			else {		//This runs most times. (Default)
 				if (downButtonPressed) {
 					if (direction == LEFT)
 					{
@@ -478,7 +532,6 @@ void Game::HandleCharacterMovements()
 					{
 						character->SetAnimationFilm(RightIdleFilm);
 					}
-					//character->SetStaticHeight(40);
 				}
 			}
 		}
@@ -566,9 +619,9 @@ void Game::InputHandler()
 					Inputs[SDL_SCANCODE_W] = false;
 					canJump = true;
 					break;
-				case SDL_SCANCODE_S:
-					//downButtonPressed = true;
-					Inputs[SDL_SCANCODE_S] = false;
+				//case SDL_SCANCODE_S:
+				//	//downButtonPressed = true;
+				//	Inputs[SDL_SCANCODE_S] = false;
 					break;
 				default:  // For continuous button reads.
 					Inputs[event.key.keysym.scancode] = false;
