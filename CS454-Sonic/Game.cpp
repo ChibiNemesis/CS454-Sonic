@@ -402,7 +402,7 @@ void Game::HandleCharacterMovements()
 				}
 			}
 			else {
-				if (x < 0 && film_id != "Sonic-Left-Walk")
+				if (direction == LEFT && film_id != "Sonic-Left-Walk")
 				{
 					character->SetAnimationFilm(LeftWalkFilm);
 				}
@@ -422,7 +422,7 @@ void Game::HandleCharacterMovements()
 				}
 			}
 			else {
-				if (x > 0 && film_id != "Sonic-Right-Walk")
+				if (direction==RIGHT && film_id != "Sonic-Right-Walk")
 					character->SetAnimationFilm(RightWalkFilm);
 				else if (x < 0 && film_id != "Sonic-Right-Skid") {
 					character->SetAnimationFilm(RightSkidFilm);
