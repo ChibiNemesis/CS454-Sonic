@@ -347,9 +347,10 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 	ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
 }
 
-bool isRolling = false;
-bool ignoreDownButton = false;
 bool canJump = true;
+bool isRolling = false;
+bool downButtonPressed = false;
+bool ignoreDownButton = false;
 
 void Game::HandleCharacterMovements()
 {
@@ -382,7 +383,7 @@ void Game::HandleCharacterMovements()
 			y = -1;
 			canJump = false;
 		}else if (Inputs[SDL_SCANCODE_S] && !ignoreDownButton) {
-				//downButtonPressed = true;
+				downButtonPressed = true;
 		}
 	}
 
@@ -443,19 +444,47 @@ void Game::HandleCharacterMovements()
 				}
 			} 
 			else {		//This runs most times.
-				if (direction == LEFT)
-				{
-					character->SetAnimationFilm(LeftIdleFilm);
+				if (downButtonPressed) {
+					if (direction == LEFT)
+					{
+						if (film_id != "Sonic-Left-CurlUp") {
+							character->SetAnimationFilm(LeftCurlUpFilm);
+							character->Move(0, 20);
+							character->SetStaticHeight(20);
+						}
+					}
+					else
+					{
+						if (film_id != "Sonic-Right-CurlUp") {
+							character->SetAnimationFilm(RightCurlUpFilm);
+							character->Move(0, 20);
+							character->SetStaticHeight(20);
+						}
+					}
+					
+					downButtonPressed = false;
 				}
-				else
-				{
-					character->SetAnimationFilm(RightIdleFilm);
+				else {
+					if (film_id == "Sonic-Right-CurlUp" || film_id=="Sonic-Left-CurlUp") {
+						character->Move(0, -20);
+						character->SetStaticHeight(40);
+					}
+
+					if (direction == LEFT)
+					{
+						character->SetAnimationFilm(LeftIdleFilm);
+					}
+					else
+					{
+						character->SetAnimationFilm(RightIdleFilm);
+					}
+					//character->SetStaticHeight(40);
 				}
 			}
 		}
 	}
 	else {
-		if (canJump == false) {
+		if (canJump == false) { //It's jumping via player Input, thus is in rolling air state.
 			if (direction == LEFT) {
 				if (film_id != "Sonic-Left-RollJump") {
 					character->SetAnimationFilm(LeftRollJumpFilm);
@@ -479,15 +508,6 @@ void Game::HandleCharacterMovements()
 		FixCameraPos(ViewWindow); // Camera follows when Character Moves.
 	}
 	else {
-		//if(fabs(velX) < 0.1 && fabs(velY) < 0.1 )
-		/*if (direction == LEFT)
-		{
-			character->SetAnimationFilm(LeftIdleFilm);
-		}
-		else
-		{
-			character->SetAnimationFilm(RightIdleFilm);
-		}*/
 	}
 
 }
@@ -548,6 +568,7 @@ void Game::InputHandler()
 					break;
 				case SDL_SCANCODE_S:
 					//downButtonPressed = true;
+					Inputs[SDL_SCANCODE_S] = false;
 					break;
 				default:  // For continuous button reads.
 					Inputs[event.key.keysym.scancode] = false;
