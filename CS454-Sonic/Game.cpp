@@ -36,7 +36,7 @@ Game::Game(std::string name, int width, int height)
 	ViewWindow.y = 150;
 	ViewWindow.w = width;
 	ViewWindow.h = height;
-	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN //SDL_WINDOW_FULLSCREEN_DESKTOP
+	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_FULLSCREEN); //SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN //SDL_WINDOW_FULLSCREEN_DESKTOP
 
 	Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
@@ -93,6 +93,8 @@ Game::Game(std::string name, int width, int height)
 	std::string RightRollJump = "tilesets\\SonicRollJumpRight.png";
 	std::string LeftCurlUp = "tilesets\\SonicCurlingUpLeft.png";
 	std::string RightCurlUp = "tilesets\\SonicCurlingUpRight.png";
+	std::string LeftLookUp = "tilesets\\SonicLookUpLeft.png";
+	std::string RightLookUp = "tilesets\\SonicLookUpRight.png";
 	std::string WinPath = "tilesets\\SonicWin.png";
 
 	SDL_Surface* LeftWalkSurface = IMG_Load(LeftWalkPath.c_str());
@@ -109,6 +111,8 @@ Game::Game(std::string name, int width, int height)
 	SDL_Surface* RightRollJumpSurface = IMG_Load(RightRollJump.c_str());
 	SDL_Surface* LeftCurlUpSurface = IMG_Load(LeftCurlUp.c_str());
 	SDL_Surface* RightCurlUpSurface = IMG_Load(RightCurlUp.c_str());
+	SDL_Surface* LeftLookUpSurface = IMG_Load(LeftLookUp.c_str());
+	SDL_Surface* RightLookUpSurface = IMG_Load(RightLookUp.c_str());
 	SDL_Surface* WinSurface = IMG_Load(WinPath.c_str());
 
 	//Rect paths
@@ -126,6 +130,8 @@ Game::Game(std::string name, int width, int height)
 	std::string RightRollJumpRectPath = "Animation\\Sonic\\SonicRollJumpRight.txt";
 	std::string LeftCurlUpRectPath = "Animation\\Sonic\\SonicCurlingUpLeft.txt";
 	std::string RightCurlUpRectPath = "Animation\\Sonic\\SonicCurlingUpRight.txt";
+	std::string LeftLookUpRectPath = "Animation\\Sonic\\SonicLookUpLeft.txt";
+	std::string RightLookUpRectPath = "Animation\\Sonic\\SonicLookUpRight.txt";
 	std::string WinRectPath = "Animation\\Sonic\\SonicWin.txt";
 
 	//Now, initialize all necessary films
@@ -143,6 +149,8 @@ Game::Game(std::string name, int width, int height)
 	RightRollJumpFilm = new AnimationFilm(RightRollJumpSurface, RightRollJumpRectPath, "Sonic-Right-RollJump");
 	LeftCurlUpFilm = new AnimationFilm(LeftCurlUpSurface, LeftCurlUpRectPath, "Sonic-Left-CurlUp");
 	RightCurlUpFilm = new AnimationFilm(RightCurlUpSurface, RightCurlUpRectPath, "Sonic-Right-CurlUp");
+	LeftLookUpFilm = new AnimationFilm(LeftLookUpSurface, LeftLookUpRectPath, "Sonic-Left-LookUp");
+	RightLookUpFilm = new AnimationFilm(RightLookUpSurface, RightLookUpRectPath, "Sonic-Right-LookUp");
 	WinFilm = new AnimationFilm(WinSurface, WinRectPath, "Sonic-win");
 
 	character = new Character(158, 276, RightIdleFilm, "Sonic");
@@ -351,15 +359,16 @@ bool canJump = true;
 bool isRolling = false;
 bool downButtonPressed = false;
 bool ignoreDownButton = false;
+bool lookUp = false;
 
 void Game::HandleCharacterMovements()
 {
 	// Keyboard input handling for character movement and scrolling:
 	int x = 0, y = 0;
 
-	//std::string film_id = character->GetCurrentFilm()->GetId();
-
 	character->directMotion = true;
+
+	ignoreDownButton = true;
 
 	if (Inputs[SDL_SCANCODE_A]) {
 		x = -1;
@@ -384,7 +393,7 @@ void Game::HandleCharacterMovements()
 		direction = RIGHT;
 	}
 	else {
-		ignoreDownButton = false; //Stop Ignoring when MoveLeft Or Right aren't pressed.
+		ignoreDownButton = false; //Stop Ignoring when Move Left/Right aren't pressed.
 	}
 
 	if (isOnSolidGround) {
@@ -394,11 +403,18 @@ void Game::HandleCharacterMovements()
 		}else if (Inputs[SDL_SCANCODE_S] && !ignoreDownButton) {
 				downButtonPressed = true;
 		}
+		else if (Inputs[SDL_SCANCODE_SPACE]) {
+			lookUp = true;
+		}
+	}
+	else
+	{
+		lookUp = false;
 	}
 
 	PhysicsMoveCharacter(x, y); // TODO: This should be run by our Physics Loop preferably
 
-	//Sonic Horizontal Movement Based Animations Start
+	//Sonic Horizontal/Vertical/Rolling Animations/Movements Start Here
 	std::string film_id = character->GetCurrentFilm()->GetId();
 
 	if (isOnSolidGround) {
@@ -417,8 +433,8 @@ void Game::HandleCharacterMovements()
 				}
 				if (isRolling == false) {
 					isRolling = true;
-					character->Move(0, 20);
 					character->SetStaticHeight(20);
+					character->Move(0, 20);
 				}
 			}
 			else {
@@ -439,6 +455,11 @@ void Game::HandleCharacterMovements()
 						character->SetAnimationFilm(LeftSkidFilm);
 					}
 				}
+				if (isRolling) {
+					isRolling = false;
+					character->Move(0, -20);
+					character->SetStaticHeight(40);
+				}
 			}
 		}
 		else if (velX > 0.6) //Almost 0
@@ -456,8 +477,8 @@ void Game::HandleCharacterMovements()
 				}
 				if (isRolling == false) {
 					isRolling = true;
-					character->Move(0, 20);
 					character->SetStaticHeight(20);
+					character->Move(0, 20);
 				}
 				//downButtonPressed = false;
 			}
@@ -476,10 +497,15 @@ void Game::HandleCharacterMovements()
 						character->SetAnimationFilm(RightSkidFilm);
 					}
 				}
+				if (isRolling) {
+					isRolling = false;
+					character->Move(0, -20);
+					character->SetStaticHeight(40);
+				}
 			}
 		}
 		else {
-			if ( x == 0 && isRolling) {
+			if ( /*x == 0 &&*/ isRolling) {
 				isRolling = false;
 				character->Move(0, -20);
 				character->SetStaticHeight(40);
@@ -498,39 +524,45 @@ void Game::HandleCharacterMovements()
 				}
 			} 
 			else {		//This runs most times. (Default)
-				if (downButtonPressed) {
+				if (downButtonPressed && !isRolling) {
 					if (direction == LEFT)
 					{
 						if (film_id != "Sonic-Left-CurlUp") {
 							character->SetAnimationFilm(LeftCurlUpFilm);
-							character->Move(0, 20);
 							character->SetStaticHeight(20);
+							character->Move(0, 20);
 						}
 					}
 					else
 					{
 						if (film_id != "Sonic-Right-CurlUp") {
 							character->SetAnimationFilm(RightCurlUpFilm);
-							character->Move(0, 20);
 							character->SetStaticHeight(20);
+							character->Move(0, 20);
 						}
 					}
 					
 					downButtonPressed = false;
 				}
 				else {
-					if (film_id == "Sonic-Right-CurlUp" || film_id=="Sonic-Left-CurlUp") {
+					if (film_id == "Sonic-Right-CurlUp" || film_id=="Sonic-Left-CurlUp" || isRolling) {
 						character->Move(0, -20);
 						character->SetStaticHeight(40);
 					}
 
 					if (direction == LEFT)
 					{
-						character->SetAnimationFilm(LeftIdleFilm);
+						if (lookUp) {
+							character->SetAnimationFilm(LeftLookUpFilm);
+						}else
+							character->SetAnimationFilm(LeftIdleFilm);
 					}
 					else
 					{
-						character->SetAnimationFilm(RightIdleFilm);
+						if (lookUp) {
+							character->SetAnimationFilm(RightLookUpFilm);
+						}else
+							character->SetAnimationFilm(RightIdleFilm);
 					}
 				}
 			}
@@ -548,10 +580,18 @@ void Game::HandleCharacterMovements()
 					character->SetAnimationFilm(RightRollJumpFilm);
 				}
 			}
-			isRolling = true;
+			if (isRolling == false) {
+				isRolling = true;
+				character->Move(0, 20);
+				character->SetStaticHeight(20);
+			}
 		}
 		else {
-			isRolling = false;
+			if (isRolling) {
+				character->Move(0, -20);
+				character->SetStaticHeight(40);
+				isRolling = false;
+			}
 		}
 	}
 
@@ -559,6 +599,9 @@ void Game::HandleCharacterMovements()
 
 	if (velX != 0 || velY != 0) {
 		FixCameraPos(ViewWindow); // Camera follows when Character Moves.
+	}
+	else if (lookUp) {
+		ScrollWithBoundsCheck(&map, &ViewWindow, 0, -1);
 	}
 	else {
 	}
@@ -615,9 +658,13 @@ void Game::InputHandler()
 				case SDL_SCANCODE_KP_MINUS:
 					scrollMultiplierapplied = true;
 					break;
-				case SDL_SCANCODE_W:
+				case SDL_SCANCODE_W: //JUMP Button
 					Inputs[SDL_SCANCODE_W] = false;
 					canJump = true;
+					break;
+				case SDL_SCANCODE_SPACE: //JUMP Button
+					Inputs[SDL_SCANCODE_SPACE] = false;
+					lookUp = false;
 					break;
 				//case SDL_SCANCODE_S:
 				//	//downButtonPressed = true;
@@ -695,7 +742,7 @@ void Game::InputHandler()
 			}
 			//FixCameraPos(ViewWindow);
 			// Delay to yield CPU
-			SDL_Delay(1);
+			//SDL_Delay(1);
 		}
 	}
 

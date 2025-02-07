@@ -88,6 +88,8 @@ private:
 	AnimationFilm* RightRollJumpFilm = NULL;
 	AnimationFilm* LeftCurlUpFilm = NULL;
 	AnimationFilm* RightCurlUpFilm = NULL;
+	AnimationFilm* LeftLookUpFilm = NULL;
+	AnimationFilm* RightLookUpFilm = NULL;
 	AnimationFilm* WinFilm = NULL;
 
 	Animation* currAnimation = NULL;
