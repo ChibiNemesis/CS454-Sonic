@@ -16,11 +16,15 @@ Game::Game(std::string name, int width, int height)
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 	music = Mix_LoadMUS("Audio\\ambience.mp3");
 	ringSound = Mix_LoadWAV("Audio\\ring.mp3");
+	skidSound = Mix_LoadWAV("Audio\\skidSound.mp3");
 	if (!music) {
 		std::cout << "Music Error: " << Mix_GetError() << "\n";
 	}
 	if (!ringSound) {
 		std::cout << "Ring Sound Error: " << Mix_GetError() << "\n";
+	}
+	if (!skidSound) {
+		std::cout << "Skid Sound Error: " << Mix_GetError() << "\n";
 	}
 	if (music != NULL) {
 		Mix_PlayMusic(music, -1);
@@ -314,7 +318,7 @@ float acceleration = 0.15f;
 float maxSpeed = DEFAULT_MOVEMENT_SPEED;     // The maximum speed the character can reach
 float friction = 0.98f;      // How much the velocity decays when no input is given
 
-float jumpInitialVelocity = DEFAULT_MOVEMENT_SPEED;
+float jumpInitialVelocity = DEFAULT_MOVEMENT_SPEED-1;
 float gravityAcceleration = 0.3f;  // Gravity added per fixed update
 bool isOnSolidGround = true;
 bool gravityAttached = false;
@@ -453,6 +457,7 @@ void Game::HandleCharacterMovements()
 					else if (x >0 && film_id != "Sonic-Left-Skid")
 					{
 						character->SetAnimationFilm(LeftSkidFilm);
+						Mix_PlayChannel(-1, skidSound, 0);
 					}
 				}
 				if (isRolling) {
@@ -495,6 +500,7 @@ void Game::HandleCharacterMovements()
 						character->SetAnimationFilm(RightWalkFilm);
 					else if (x < 0 && film_id != "Sonic-Right-Skid") {
 						character->SetAnimationFilm(RightSkidFilm);
+						Mix_PlayChannel(-1, skidSound, 0);
 					}
 				}
 				if (isRolling) {
@@ -602,6 +608,7 @@ void Game::HandleCharacterMovements()
 	}
 	else if (lookUp) {
 		ScrollWithBoundsCheck(&map, &ViewWindow, 0, -1);
+		//TODO: use a global counter to limit the ammount of scrolling looking up does and reset to normal Y coordinates when not pressing this.
 	}
 	else {
 	}

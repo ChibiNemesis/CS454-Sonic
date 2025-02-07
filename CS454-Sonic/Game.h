@@ -33,6 +33,7 @@ private:
 	SDL_Rect ViewWindow;
 	Mix_Music* music;
 	Mix_Chunk* ringSound;
+	Mix_Chunk* skidSound;
 	bool running = true;
 	bool ismoving = false;
 	int movement_offset;
