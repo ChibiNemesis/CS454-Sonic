@@ -47,6 +47,9 @@ public:
 			//quantizer.Move(GetBox(), &dx, &dy);
 			gravity.Check(GetBox());
 		}
+		if (x < 0) {
+			x = 0;
+		}
 		return *this;
 	}
 
