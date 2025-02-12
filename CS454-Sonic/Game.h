@@ -18,10 +18,11 @@
 #include"SDL_mixer.h"
 #include"Flower.h"
 #include"BoundingBox.h"
+#include"SDL_ttf.h"
 
 #define LEFT 0
 #define RIGHT 1
-#define COINS 20
+#define COINS 30
 #define FLOWERS 4
 
 #define DEFAULT_MOVEMENT_SPEED 10
@@ -100,6 +101,9 @@ private:
 
 	std::vector<int> CoinVec;
 
+	TTF_Font* TextFont = NULL;
+	uint64_t StartTime;
+
 	void Render();
 	void Input();
 	void InputHandler();
@@ -140,5 +144,7 @@ public:
 	void PrepareSpriteGravityHandler(GridLayer* gridLayer, Sprite* sprite);
 
 	void PhysicsMoveCharacter(int dx, int dy);
+
+	void DisplayUI();
 };
 

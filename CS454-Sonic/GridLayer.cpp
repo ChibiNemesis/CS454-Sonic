@@ -26,10 +26,10 @@ bool GridLayer::FilterMotionDown(const BoundingBox& r, int& dy)
 {
 	for (auto Collider : Colliders) {
 		if (r.Intersects(Collider)) { 
-			std::cout << "Box:\n";
-			std::cout << "--------------------------------\n";
-			std::cout << "Intersects Below" << "\n";
-			std::cout << "#################################\n";
+			//std::cout << "Box:\n";
+			//std::cout << "--------------------------------\n";
+			//std::cout << "Intersects Below" << "\n";
+			//std::cout << "#################################\n";
 			dy = 0;
 			return true;
 		}

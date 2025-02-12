@@ -13,6 +13,8 @@ Game::Game(std::string name, int width, int height)
 
 	IMG_Init(IMG_INIT_PNG);
 	Mix_Init(MIX_INIT_MP3);
+	if (TTF_Init() < 0)
+		std::cout << "TTF error: " << TTF_GetError() << std::endl;
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
 	music = Mix_LoadMUS("Audio\\ambience.mp3");
 	ringSound = Mix_LoadWAV("Audio\\ring.mp3");
@@ -207,6 +209,10 @@ Game::Game(std::string name, int width, int height)
 
 		Flowers[f] = new Flower(stoi(x), stoi(y), flower_films[Flower_Type[f]], "Flower-" + std::to_string(f));
 	}
+
+	//Font Init
+	TextFont = TTF_OpenFont("Fonts\\second.ttf", 20);
+	StartTime = GetSystemTime();
 }
 
 Game::~Game()
@@ -357,6 +363,41 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 
 	character->Move(static_cast<int>(velX), static_cast<int>(velY));
 	ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
+}
+
+void Game::DisplayUI()
+{
+	auto TotalScore = coins * 100;
+	auto CurrentTime = GetSystemTime();
+	int minutes = (CurrentTime - StartTime)/60000; //60000 ms = 1 minute
+	int Seconds = ((CurrentTime - StartTime) % 60000)/1000;
+
+	std::string timeText;
+	std::string ScoreText;
+	std::string RingsText;
+	if (Seconds < 10) {
+		timeText = std::to_string(minutes)+":0" + std::to_string(Seconds);
+	}
+	else {
+		timeText = std::to_string(minutes) + ":" + std::to_string(Seconds);
+	}
+	ScoreText = "Score " + std::to_string(100 * coins);
+	RingsText = "Rings: " + std::to_string(coins);
+
+	SDL_Color color = { 228, 15, 243, 255 };
+	SDL_Surface* ScoreSurface = TTF_RenderText_Solid(TextFont, ScoreText.c_str(), color);
+	SDL_Surface* TimeSurface = TTF_RenderText_Solid(TextFont, timeText.c_str(), color);
+	SDL_Surface* RingsSurface = TTF_RenderText_Solid(TextFont, RingsText.c_str(), color);
+	//blit
+	SDL_Rect score_Rect = {10, 10, NULL, NULL};
+	SDL_Rect Time_Rect = { 10, 40, NULL, NULL };
+	SDL_Rect Rings_Rect = { 10, 70, NULL, NULL };
+	SDL_BlitSurface(ScoreSurface, NULL, winsurface, &score_Rect);
+	SDL_BlitSurface(TimeSurface, NULL, winsurface, &Time_Rect);
+	SDL_BlitSurface(RingsSurface, NULL, winsurface, &Rings_Rect);
+	SDL_FreeSurface(ScoreSurface);
+	SDL_FreeSurface(TimeSurface);
+	SDL_FreeSurface(RingsSurface);
 }
 
 bool canJump = true;
@@ -768,6 +809,7 @@ void Game::InputHandler()
 				Mix_PlayChannel(-1, ringSound, 0);
 
 				CoinVec.erase(find(CoinVec.begin(), CoinVec.end(), val));
+				coins++;
 			}
 			CharacterBox->~BoundingBox();
 			RingBox->~BoundingBox();
@@ -908,6 +950,8 @@ void Game::InputHandler()
 			character->GetBox().h
 		};
 		character->Display(*winsurface, Character_Rect);
+
+		DisplayUI();
 
 		assert(!SDL_UpdateWindowSurface(win));
 	}
