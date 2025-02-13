@@ -26,10 +26,7 @@ bool GridLayer::FilterMotionDown(const BoundingBox& r, int& dy)
 {
 	for (auto Collider : Colliders) {
 		if (r.Intersects(Collider)) { 
-			//std::cout << "Box:\n";
-			//std::cout << "--------------------------------\n";
 			//std::cout << "Intersects Below" << "\n";
-			//std::cout << "#################################\n";
 			dy = 0;
 			return true;
 		}
@@ -41,10 +38,7 @@ bool GridLayer::FilterMotionUp(const BoundingBox& r, int* dy)
 {
 	for (auto Collider : Colliders) {
 		if (r.Intersects(Collider)) {
-			std::cout << "Box:\n";
-			std::cout << "--------------------------------\n";
 			std::cout << "Intersects Up" << "\n";
-			std::cout << "#################################\n";
 			dy = 0;
 			return true;
 		}
@@ -55,11 +49,8 @@ bool GridLayer::FilterMotionUp(const BoundingBox& r, int* dy)
 bool GridLayer::FilterMotionLeft(const BoundingBox& r, int* dx)
 {
 	for (auto Collider : Colliders) {
-		if (r.Intersects(Collider)) {
-			std::cout << "Box:\n";
-			std::cout << "--------------------------------\n";
+		if (r.IntersectsLeft(Collider)) {
 			std::cout << "Intersects Left" << "\n";
-			std::cout << "#################################\n";
 			dx = 0;
 			return true;
 		}
@@ -71,11 +62,8 @@ bool GridLayer::FilterMotionRight(const BoundingBox& r, int* dx)
 {
 
 	for (auto Collider : Colliders) {
-		if (r.Intersects(Collider)) {
-			std::cout << "Box:\n";
-			std::cout << "--------------------------------\n";
+		if (r.IntersectsRight(Collider)) {
 			std::cout << "Intersects Right" << "\n";
-			std::cout << "#################################\n";
 			dx = 0;
 			return true;
 		}

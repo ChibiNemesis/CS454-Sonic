@@ -25,22 +25,38 @@ bool BoundingBox::Intersects(const BoundingBox& box) const
 
 bool BoundingBox::IntersectsAbove(const BoundingBox& box)
 {
-    return !(box.y2 < y1);
+    return !(
+        box.x2 < x1 || //at left
+        x2 < box.x1 || //at right
+        box.y2 < y1 // above
+        );
 }
 
 bool BoundingBox::IntersectsBelow(const BoundingBox& box)
 {
-    return !(y2 < box.y1);
+    return !(
+        box.x2 < x1 || //at left
+        x2 < box.x1 || //at right
+        y2 < box.y1    //below
+        );
 }
 
-bool BoundingBox::IntersectsLeft(const BoundingBox& box)
+bool BoundingBox::IntersectsLeft(const BoundingBox& box) const
 {
-    return !(box.x2 < x1);
+    return !(
+        box.x1 < x2 && //at left
+        box.y2 < y1 //|| // above
+        //y2 < box.y1    //below
+        );
 }
 
-bool BoundingBox::IntersectsRight(const BoundingBox& box)
+bool BoundingBox::IntersectsRight(const BoundingBox& box) const
 {
-    return !(x2 < box.x1);
+    return !(
+        x1 < box.x2 && //at right
+        box.y2 < y1 //|| // above
+        //y2 < box.y1    //below
+        );
 }
 
 bool BoundingBox::In(unsigned x, unsigned y) const

@@ -16,8 +16,8 @@ public:
 
 	bool IntersectsAbove(const BoundingBox& box);
 	bool IntersectsBelow(const BoundingBox& box);
-	bool IntersectsLeft(const BoundingBox& box);
-	bool IntersectsRight(const BoundingBox& box);
+	bool IntersectsLeft(const BoundingBox& box) const;
+	bool IntersectsRight(const BoundingBox& box) const;
 
 	bool In(unsigned x, unsigned y) const;
 	bool Intersects(const BoundingArea& area) const;
