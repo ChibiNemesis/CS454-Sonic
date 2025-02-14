@@ -735,6 +735,7 @@ void Game::InputHandler()
 			
 			if (frameCountAfterDeath < 20) {
 				velY = -1;
+				velX = 0;
 				character->Move(0, static_cast<int>(velY));;
 			}
 			else {
