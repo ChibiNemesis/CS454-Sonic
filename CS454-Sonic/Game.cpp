@@ -1,6 +1,7 @@
 #include "Game.h"
 
 
+
 Game::Game(std::string name, int width, int height)
 {
 	// Initialize SDL. SDL_Init will return -1 if it fails.
@@ -19,6 +20,12 @@ Game::Game(std::string name, int width, int height)
 	music = Mix_LoadMUS("Audio\\ambience.mp3");
 	ringSound = Mix_LoadWAV("Audio\\ring.mp3");
 	skidSound = Mix_LoadWAV("Audio\\skidSound.mp3");
+	jumpSound = Mix_LoadWAV("Audio\\jumpSound.mp3");
+	spinSound = Mix_LoadWAV("Audio\\spinSound.mp3");
+	ringLossSound = Mix_LoadWAV("Audio\\ringLossSound.mp3");
+	spikeDeathSound = Mix_LoadWAV("Audio\\spikeDeathSound.mp3");
+	gameOverSound = Mix_LoadWAV("Audio\\gameOverSound.mp3");
+
 	if (!music) {
 		std::cout << "Music Error: " << Mix_GetError() << "\n";
 	}
@@ -27,6 +34,9 @@ Game::Game(std::string name, int width, int height)
 	}
 	if (!skidSound) {
 		std::cout << "Skid Sound Error: " << Mix_GetError() << "\n";
+	}
+	if (!ringLossSound) {
+		std::cout << "Ring Loss Sound Error: " << Mix_GetError() << "\n";
 	}
 	if (music != NULL) {
 		Mix_PlayMusic(music, -1);
@@ -42,7 +52,7 @@ Game::Game(std::string name, int width, int height)
 	ViewWindow.y = 150;
 	ViewWindow.w = width;
 	ViewWindow.h = height;
-	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_FULLSCREEN); //SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN //SDL_WINDOW_FULLSCREEN_DESKTOP
+	win = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN); //SDL_WINDOW_SHOWN // SDL_WINDOW_FULLSCREEN //SDL_WINDOW_FULLSCREEN_DESKTOP
 
 	Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
@@ -101,7 +111,9 @@ Game::Game(std::string name, int width, int height)
 	std::string RightCurlUp = "tilesets\\SonicCurlingUpRight.png";
 	std::string LeftLookUp = "tilesets\\SonicLookUpLeft.png";
 	std::string RightLookUp = "tilesets\\SonicLookUpRight.png";
+	std::string DeathPath = "tilesets\\SonicDeath.png";
 	std::string WinPath = "tilesets\\SonicWin.png";
+	std::string GameOverPath = "tilesets\\GameOver.png";
 
 	SDL_Surface* LeftWalkSurface = IMG_Load(LeftWalkPath.c_str());
 	SDL_Surface* RightWalkSurface = IMG_Load(RightWalkPath.c_str());
@@ -119,7 +131,9 @@ Game::Game(std::string name, int width, int height)
 	SDL_Surface* RightCurlUpSurface = IMG_Load(RightCurlUp.c_str());
 	SDL_Surface* LeftLookUpSurface = IMG_Load(LeftLookUp.c_str());
 	SDL_Surface* RightLookUpSurface = IMG_Load(RightLookUp.c_str());
+	SDL_Surface* DeathSurface = IMG_Load(DeathPath.c_str());
 	SDL_Surface* WinSurface = IMG_Load(WinPath.c_str());
+	SDL_Surface* GameOverSurface = IMG_Load(GameOverPath.c_str());
 
 	//Rect paths
 	std::string LeftWalkRectPath = "Animation\\Sonic\\SonicWalkLeft.txt";
@@ -138,7 +152,9 @@ Game::Game(std::string name, int width, int height)
 	std::string RightCurlUpRectPath = "Animation\\Sonic\\SonicCurlingUpRight.txt";
 	std::string LeftLookUpRectPath = "Animation\\Sonic\\SonicLookUpLeft.txt";
 	std::string RightLookUpRectPath = "Animation\\Sonic\\SonicLookUpRight.txt";
+	std::string DeathRectPath = "Animation\\Sonic\\SonicDeath.txt";
 	std::string WinRectPath = "Animation\\Sonic\\SonicWin.txt";
+	std::string GameOverRectPath = "Animation\\Sonic\\GameOver.txt";
 
 	//Now, initialize all necessary films
 	LeftWalkFilm = new AnimationFilm(LeftWalkSurface, LeftWalkRectPath, "Sonic-Left-Walk");
@@ -157,7 +173,9 @@ Game::Game(std::string name, int width, int height)
 	RightCurlUpFilm = new AnimationFilm(RightCurlUpSurface, RightCurlUpRectPath, "Sonic-Right-CurlUp");
 	LeftLookUpFilm = new AnimationFilm(LeftLookUpSurface, LeftLookUpRectPath, "Sonic-Left-LookUp");
 	RightLookUpFilm = new AnimationFilm(RightLookUpSurface, RightLookUpRectPath, "Sonic-Right-LookUp");
+	DeathFilm = new AnimationFilm(DeathSurface, DeathRectPath, "Sonic-death");
 	WinFilm = new AnimationFilm(WinSurface, WinRectPath, "Sonic-win");
+	GameOverFilm = new AnimationFilm(GameOverSurface, GameOverRectPath, "Game-Over");
 
 	character = new Character(158, 276, RightIdleFilm, "Sonic");
 	character->SetStaticHeight(40);
@@ -208,6 +226,28 @@ Game::Game(std::string name, int width, int height)
 		std::getline(ss, y, ' ');
 
 		Flowers[f] = new Flower(stoi(x), stoi(y), flower_films[Flower_Type[f]], "Flower-" + std::to_string(f));
+	}
+
+	//Spikes Setup
+	for (auto sp = 0; sp < SPIKES; sp++) {
+		SpikeVec.push_back(sp);
+	}
+	std::string Spike_Surface_path = "tilesets\\spikes.png";
+	std::string Spike_Rects_Path = "Animation\\Spikes\\SpikeBitmapPos.txt";
+	SDL_Surface* Spike_Surface = IMG_Load(Spike_Surface_path.c_str());
+	AnimationFilm* spike_Film = new AnimationFilm(Spike_Surface, Spike_Rects_Path, "Spike-Film");
+
+	for (auto sp = 0; sp < SPIKES; sp++) {
+		std::string Spike_Pos_Path = "Animation\\Spikes\\Spikes" + std::to_string(sp) + ".txt";
+
+		std::ifstream input{ Spike_Pos_Path };
+		std::string line, x, y;
+		std::getline(input, line);
+		std::istringstream ss(std::move(line));
+		std::getline(ss, x, ' ');
+		std::getline(ss, y, ' ');
+
+		Spikes[sp] = new Spike(stoi(x), stoi(y), spike_Film, "Spike-" + std::to_string(sp));
 	}
 
 	//Font Init
@@ -351,7 +391,7 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 		velY = -jumpInitialVelocity;
 	}
 	else {
-		if (!isOnSolidGround) {
+		if (!isOnSolidGround || isDead) {
 			velY += gravityAcceleration;
 			gravityAttached = true;
 		}
@@ -362,7 +402,9 @@ void Game::PhysicsMoveCharacter(int dx, int dy) {
 	}
 
 	character->Move(static_cast<int>(velX), static_cast<int>(velY));
-	ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
+	if (!isDead) {
+		ScrollWithBoundsCheck(&map, &ViewWindow, static_cast<int>(velX), static_cast<int>(velY));
+	}
 }
 
 void Game::DisplayUI()
@@ -445,6 +487,7 @@ void Game::HandleCharacterMovements()
 		if (Inputs[SDL_SCANCODE_W] && canJump) {
 			y = -1;
 			canJump = false;
+			Mix_PlayChannel(-1, jumpSound, 0);
 		}else if (Inputs[SDL_SCANCODE_S] && !ignoreDownButton) {
 				downButtonPressed = true;
 		}
@@ -480,6 +523,7 @@ void Game::HandleCharacterMovements()
 					isRolling = true;
 					character->SetStaticHeight(20);
 					character->Move(0, 20);
+					Mix_PlayChannel(-1, spinSound, 0);
 				}
 			}
 			else {
@@ -525,6 +569,7 @@ void Game::HandleCharacterMovements()
 					isRolling = true;
 					character->SetStaticHeight(20);
 					character->Move(0, 20);
+					Mix_PlayChannel(-1, spinSound, 0);
 				}
 				//downButtonPressed = false;
 			}
@@ -658,6 +703,10 @@ void Game::HandleCharacterMovements()
 
 bool debugCoinDestroyedTest = false;
 
+bool deathAnimationActive = false;
+bool lastMusic = false;
+int frameCountAfterDeath = 0;
+
 /// <summary>
 /// Executing the recorded Inputs.
 /// </summary>
@@ -665,7 +714,38 @@ void Game::InputHandler()
 {
 	HandleScrolling();
 	HandleScrollingMultiplier();
-	HandleCharacterMovements();
+
+	if (!isDead) {
+		HandleCharacterMovements();
+	}
+	else {
+		if (!deathAnimationActive) {
+			//Sonic DEath ANimation plays and dies!
+			Mix_PlayChannel(-1, spikeDeathSound, 0);
+			Mix_HaltMusic();
+			deathAnimationActive = true;
+		}
+		else {
+			if (!lastMusic) {
+				Mix_PlayChannel(-1, gameOverSound, 0);
+				lastMusic = true;
+				character->SetAnimationFilm(DeathFilm);
+				gravityAcceleration = 0.03f;
+			}
+			
+			if (frameCountAfterDeath < 20) {
+				velY = -1;
+				character->Move(0, static_cast<int>(velY));;
+			}
+			else {
+				PhysicsMoveCharacter(0, 0);
+			}
+
+			frameCountAfterDeath++;
+			// Game Over
+			//PhysicsMoveCharacter(); // Up and Down Motion.
+		}
+	}
 
 	// Test coin collision code:
 	if (Inputs[SDL_SCANCODE_1] && !debugCoinDestroyedTest) {
@@ -768,7 +848,7 @@ void Game::InputHandler()
 
 	void Game::mainloop()
 	{
-		const Uint32 FIXED_FPS = 60; // Used to Decouple Physics/InputHandling from Rendering.
+		const Uint32 FIXED_FPS = 60; // Used to Decouple Physics/InputHandling from Rendering. 16.67ms
 		const double physicsUpdateInterval = 1000.0 / FIXED_FPS; // e.g., ~33.33ms per fixed update
 
 		Uint32 currentTime = SDL_GetTicks();
@@ -814,15 +894,47 @@ void Game::InputHandler()
 			CharacterBox->~BoundingBox();
 			RingBox->~BoundingBox();
 		}
+
+		for (auto val : SpikeVec) {
+			auto cb = character->GetBox();
+			auto spikeb = Spikes[val]->GetBox();
+			BoundingBox* CharacterBox = new BoundingBox(cb.x, cb.y, cb.x + cb.w, cb.y + cb.h);
+			BoundingBox* SpikeBox = new BoundingBox(spikeb.x, spikeb.y, spikeb.x + spikeb.w, spikeb.y + spikeb.h);
+			if (CharacterBox->Intersects(*SpikeBox)) {
+				//Spikes[val]->SetCollided(true);
+				//Spikes[val]->DestroyCoin();
+				if (coins > 0) {
+					//Sonic gets Hit!
+					Mix_PlayChannel(-1, ringLossSound, 0);
+					coins -= 10;
+					if (coins < 0) {
+						coins = 0;
+					}
+				}
+				else {
+					//Sonic Dies from Spikes!
+					if (!isDead) {
+						//Mix_PlayChannel(-1, spikeDeathSound, 0);
+						isDead = true;
+					}
+				}
+
+				//SpikeVec.erase(find(SpikeVec.begin(), SpikeVec.end(), val));
+				/*coins++;*/ //Damaged++
+			}
+			CharacterBox->~BoundingBox();
+			SpikeBox->~BoundingBox();
+		}
+
 		SDL_Rect sr = character->GetBox();
 
 		SDL_Rect sr2{ sr.x, sr.y, character->getStaticWidth(), character->getStaticHeight() };
 
 		BoundingBox* CharacterBox = new BoundingBox(sr.x, sr.y, sr.x + sr2.w, sr.y + sr2.h);
 		BoundingBox* Temp = new BoundingBox(0, 316, 1173, 408);
-		if (CharacterBox->Intersects(*Temp)) {
+		/*if (CharacterBox->Intersects(*Temp)) {
 			std::cout << "Intersects\n";
-		}
+		}*/
 		isOnSolidGround = grid->IsOnSolidGround(*CharacterBox);
 		CharacterBox->~BoundingBox();
 		Temp->~BoundingBox();
@@ -940,6 +1052,17 @@ void Game::InputHandler()
 				16
 			};
 			Coins[val]->Display(*winsurface, Coin_Rect);
+		}
+
+		//Render all available spikes
+		for (auto val : SpikeVec) {
+			SDL_Rect Spike_Rect{
+				Spikes[val]->GetBox().x - ViewWindow.x,
+				Spikes[val]->GetBox().y - ViewWindow.y,
+				Spikes[val]->GetBox().w,
+				Spikes[val]->GetBox().h
+			};
+			Spikes[val]->Display(*winsurface, Spike_Rect);
 		}
 
 		//Render Character after animation and physics are done

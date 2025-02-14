@@ -18,12 +18,15 @@
 #include"SDL_mixer.h"
 #include"Flower.h"
 #include"BoundingBox.h"
-#include"SDL_ttf.h"
+//#include"SDL_ttf.h"
+#include "../External/SDL2_ttf/include/SDL_ttf.h"
+#include "Spike.h"
 
 #define LEFT 0
 #define RIGHT 1
 #define COINS 30
 #define FLOWERS 4
+#define SPIKES 2
 
 #define DEFAULT_MOVEMENT_SPEED 10
 #define SCROLLDELAY 100
@@ -35,6 +38,11 @@ private:
 	Mix_Music* music;
 	Mix_Chunk* ringSound;
 	Mix_Chunk* skidSound;
+	Mix_Chunk* jumpSound;
+	Mix_Chunk* spinSound;
+	Mix_Chunk* ringLossSound;
+	Mix_Chunk* spikeDeathSound;
+	Mix_Chunk* gameOverSound;
 	bool running = true;
 	bool ismoving = false;
 	int movement_offset;
@@ -59,6 +67,7 @@ private:
 	double  scrollMultiplier = 1.0f;
 	bool scrollMultiplierapplied = false;
 
+	bool isDead = false;
 
 
 	SDL_Window* win = nullptr;
@@ -70,10 +79,11 @@ private:
 	TerrainNode* terrains = NULL;
 	TerrainNode* current_terrain = NULL;
 
-	//Character, Coin and Flower are subclasses of sprite
+	//Character, Coin, Flower and Spike are subclasses of sprite
 	Character* character = NULL;
 	Coin *Coins[COINS];
 	Flower* Flowers[FLOWERS];
+	Spike* Spikes[SPIKES];
 
 	//One AnimationFilm for every possible diretion
 	AnimationFilm* LeftWalkFilm = NULL;
@@ -92,7 +102,9 @@ private:
 	AnimationFilm* RightCurlUpFilm = NULL;
 	AnimationFilm* LeftLookUpFilm = NULL;
 	AnimationFilm* RightLookUpFilm = NULL;
+	AnimationFilm* DeathFilm = NULL;
 	AnimationFilm* WinFilm = NULL;
+	AnimationFilm* GameOverFilm = NULL;
 
 	Animation* currAnimation = NULL;
 
@@ -100,6 +112,7 @@ private:
 	TickAnimator* tickanimator = NULL;
 
 	std::vector<int> CoinVec;
+	std::vector<int> SpikeVec;
 
 	TTF_Font* TextFont = NULL;
 	uint64_t StartTime;
